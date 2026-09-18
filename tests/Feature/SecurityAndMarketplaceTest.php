@@ -1,0 +1,10 @@
+<?php
+namespace Tests\Feature;
+use App\Models\{Listing,User}; use Illuminate\Foundation\Testing\RefreshDatabase; use Illuminate\Support\Facades\Hash; use Tests\TestCase;
+class SecurityAndMarketplaceTest extends TestCase {use RefreshDatabase;
+ private function student(bool $verified=false):User{$u=User::create(['name'=>'Test Student','matric_no'=>'CSC/TEST/001','email'=>'student@example.test','programme'=>'Computer Science','level'=>'400','password'=>Hash::make('SecurePass123!')]);if($verified)$u->verification()->create(['matric_no'=>$u->matric_no,'full_name'=>$u->name,'programme'=>$u->programme,'level'=>$u->level,'id_card_image'=>'private/id','fee_receipt_image'=>'private/fee','verification_status'=>'verified']);return $u;}
+ public function test_pending_student_cannot_create_listing():void{$u=$this->student();$this->actingAs($u)->post('/listings',['title'=>'Phone','description'=>'Good phone','category'=>'Phones & Electronics','price'=>100000])->assertRedirect('/verification');$this->assertDatabaseCount('listings',0);}
+ public function test_verified_student_can_create_listing():void{$u=$this->student(true);$this->actingAs($u)->post('/listings',['title'=>'Phone','description'=>'Good phone','category'=>'Phones & Electronics','price'=>100000])->assertRedirect();$this->assertDatabaseHas('listings',['title'=>'Phone','user_id'=>$u->id]);}
+ public function test_student_cannot_purchase_own_listing():void{$u=$this->student(true);$l=Listing::create(['user_id'=>$u->id,'title'=>'Laptop','description'=>'Test','category'=>'Laptops & Computers','price'=>250000,'status'=>'active']);$this->actingAs($u)->post('/checkout/'.$l->id)->assertStatus(422);}
+ public function test_non_admin_cannot_access_admin_dashboard():void{$this->actingAs($this->student(true))->get('/admin')->assertForbidden();}
+}
