@@ -1,1 +1,44 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6"><div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-sm font-bold uppercase tracking-widest text-blue-700">Student dashboard</p><h1 class="mt-2 text-3xl font-black text-blue-950">Hello, {{ auth()->user()->name }}</h1></div><a href="{{ route('kyc.show') }}" class="rounded-lg border bg-white px-4 py-2 text-sm font-bold">Verification: {{ strtoupper(auth()->user()->verification?->verification_status ?? 'NOT SUBMITTED') }}</a></div><div class="mt-8 grid gap-px overflow-hidden border bg-slate-200 sm:grid-cols-3 lg:grid-cols-6">@foreach($stats as $label=>$value)<div class="bg-white p-5"><p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ str_replace('_',' ',$label) }}</p><p class="mt-2 text-3xl font-black text-blue-950">{{ $value }}</p></div>@endforeach</div><div class="mt-10 grid gap-8 lg:grid-cols-[1fr_360px]"><section class="border bg-white"><div class="border-b p-5"><h2 class="font-bold text-blue-950">Recent purchases</h2></div>@forelse($recent as $tx)<div class="flex items-center justify-between border-b p-5 last:border-0"><div><p class="font-semibold">{{ $tx->listing->title }}</p><p class="text-xs uppercase text-slate-500">{{ str_replace('_',' ',$tx->status) }}</p></div><p class="font-bold">₦{{ number_format($tx->amount,2) }}</p></div>@empty<div class="p-8 text-sm text-slate-500">You haven't purchased anything yet. Browse the marketplace when your account is verified.</div>@endforelse</section><aside class="border bg-blue-950 p-6 text-white"><h2 class="text-lg font-bold">Quick actions</h2><div class="mt-5 grid gap-3"><a href="{{ route('listings.index') }}" class="border border-blue-800 px-4 py-3 text-sm font-semibold">Browse marketplace →</a><a href="{{ route('kyc.show') }}" class="border border-blue-800 px-4 py-3 text-sm font-semibold">Manage verification →</a></div></aside></div></div>@endsection
+@extends('layouts.app') @section('content')
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Student dashboard</p>
+                <h1 class="mt-2 text-3xl font-black text-blue-950">Hello, {{ auth()->user()->name }}</h1>
+            </div><a href="{{ route('kyc.show') }}"
+                class="rounded-lg border bg-white px-4 py-2 text-sm font-bold">Verification:
+                {{ strtoupper(auth()->user()->verification?->verification_status ?? 'NOT SUBMITTED') }}</a>
+        </div>
+        <div class="mt-8 grid gap-px overflow-hidden border bg-slate-200 sm:grid-cols-3 lg:grid-cols-6">
+            @foreach ($stats as $label => $value)
+                <div class="bg-white p-5">
+                    <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ str_replace('_', ' ', $label) }}</p>
+                    <p class="mt-2 text-3xl font-black text-blue-950">{{ $value }}</p>
+                </div>
+            @endforeach
+        </div>
+        <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_360px]">
+            <section class="border bg-white">
+                <div class="border-b p-5">
+                    <h2 class="font-bold text-blue-950">Recent purchases</h2>
+                </div>
+                @forelse($recent as $tx)
+                    <div class="flex items-center justify-between border-b p-5 last:border-0">
+                        <div>
+                            <p class="font-semibold">{{ $tx->listing->title }}</p>
+                            <p class="text-xs uppercase text-slate-500">{{ str_replace('_', ' ', $tx->status) }}</p>
+                        </div>
+                        <p class="font-bold">₦{{ number_format($tx->amount, 2) }}</p>
+                </div>@empty<div class="p-8 text-sm text-slate-500">You haven't purchased anything yet. Browse the
+                        marketplace when your account is verified.</div>
+                @endforelse
+            </section>
+            <aside class="border bg-blue-950 p-6 text-white">
+                <h2 class="text-lg font-bold">Quick actions</h2>
+                <div class="mt-5 grid gap-3"><a href="{{ route('listings.index') }}"
+                        class="border border-blue-800 px-4 py-3 text-sm font-semibold">Browse marketplace →</a><a
+                        href="{{ route('kyc.show') }}" class="border border-blue-800 px-4 py-3 text-sm font-semibold">Manage
+                        verification →</a></div>
+            </aside>
+        </div>
+    </div>
+@endsection

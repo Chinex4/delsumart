@@ -1,1 +1,38 @@
-@extends('layouts.app') @section('content')<div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2"><div class="aspect-square overflow-hidden border bg-slate-100">@if($listing->images->first())<img src="{{ asset('storage/'.$listing->images->first()->path) }}" class="h-full w-full object-cover">@else<div class="flex h-full items-center justify-center text-slate-400">No product image</div>@endif</div><div><p class="text-sm font-bold uppercase tracking-widest text-blue-700">{{ $listing->category }}</p><h1 class="mt-3 text-4xl font-black text-blue-950">{{ $listing->title }}</h1><p class="mt-4 text-3xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-7 border-y py-5"><p class="text-sm text-slate-500">Seller</p><p class="mt-1 font-bold">{{ $listing->seller->name }} @if($listing->seller->isVerifiedStudent())<span class="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">✓ Verified Student</span>@endif</p><p class="mt-1 text-sm text-slate-500">{{ $listing->seller->programme }} · {{ $listing->seller->level }}</p></div><div class="prose mt-7 max-w-none text-slate-700"><p>{{ $listing->description }}</p></div>@auth @if(auth()->id()===$listing->user_id)<form method="POST" action="{{ route('listings.destroy',$listing) }}" class="mt-8">@csrf @method('DELETE')<button class="rounded-lg border border-red-300 px-5 py-3 font-bold text-red-700">Remove listing</button></form>@else<form method="POST" action="{{ route('payments.initialize',$listing) }}" class="mt-8">@csrf<button class="w-full rounded-lg bg-blue-950 px-6 py-4 font-bold text-white">Pay securely with Paystack</button><p class="mt-3 text-center text-xs text-slate-500">Payment status is verified by DelsuMart's server.</p></form>@endif @else<a href="{{ route('login') }}" class="mt-8 block rounded-lg bg-blue-950 px-6 py-4 text-center font-bold text-white">Sign in to purchase</a>@endauth</div></div>@endsection
+@extends('layouts.app') @section('content')
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2">
+        <div class="aspect-square overflow-hidden border bg-slate-100">
+            @if ($listing->images->first())
+            <img src="{{ asset('storage/' . $listing->images->first()->path) }}" class="h-full w-full object-cover">@else
+                <div class="flex h-full items-center justify-center text-slate-400">No product image</div>
+            @endif
+        </div>
+        <div>
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-700">{{ $listing->category }}</p>
+            <h1 class="mt-3 text-4xl font-black text-blue-950">{{ $listing->title }}</h1>
+            <p class="mt-4 text-3xl font-black">₦{{ number_format($listing->price, 2) }}</p>
+            <div class="mt-7 border-y py-5">
+                <p class="text-sm text-slate-500">Seller</p>
+                <p class="mt-1 font-bold">{{ $listing->seller->name }} @if ($listing->seller->isVerifiedStudent())
+                        <span class="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">✓ Verified
+                            Student</span>
+                    @endif
+                </p>
+                <p class="mt-1 text-sm text-slate-500">{{ $listing->seller->programme }} · {{ $listing->seller->level }}</p>
+            </div>
+            <div class="prose mt-7 max-w-none text-slate-700">
+                <p>{{ $listing->description }}</p>
+            </div>@auth @if (auth()->id() === $listing->user_id)
+                <form method="POST" action="{{ route('listings.destroy', $listing) }}" class="mt-8">@csrf
+                    @method('DELETE')<button
+                        class="rounded-lg border border-red-300 px-5 py-3 font-bold text-red-700">Remove listing</button>
+            </form>@else<form method="POST" action="{{ route('payments.initialize', $listing) }}" class="mt-8">
+                    @csrf<button class="w-full rounded-lg bg-blue-950 px-6 py-4 font-bold text-white">Pay securely with
+                        Paystack</button>
+                    <p class="mt-3 text-center text-xs text-slate-500">Payment status is verified by DelsuMart's server.</p>
+                </form>
+        @endif @else<a href="{{ route('login') }}"
+                class="mt-8 block rounded-lg bg-blue-950 px-6 py-4 text-center font-bold text-white">Sign in to
+            purchase</a>@endauth
+    </div>
+</div>
+@endsection

@@ -1,11 +1,74 @@
 <?php
+
 namespace App\Http\Controllers;
-use App\Models\{AuditLog,Dispute,FraudFlag,Listing,Transaction,User,Verification}; use App\Notifications\KycStatusNotification; use App\Services\FraudScoringService; use Illuminate\Http\Request; use Illuminate\Support\Facades\DB;
-class AdminController extends Controller {
- public function dashboard(){return view('admin.dashboard',['stats'=>['students'=>User::where('role','student')->count(),'verified'=>Verification::where('verification_status','verified')->count(),'pending'=>Verification::where('verification_status','pending')->count(),'rejected'=>Verification::where('verification_status','rejected')->count(),'listings'=>Listing::where('status','active')->count(),'held'=>Transaction::where('status','paid_held')->count(),'disputes'=>Dispute::whereIn('status',['open','under_review'])->count(),'flags'=>FraudFlag::where('status','open')->count()],'pending'=>Verification::with('user')->where('verification_status','pending')->latest()->take(8)->get()]);}
- public function verifications(){return view('admin.verifications',['verifications'=>Verification::with('user')->latest()->paginate(20)]);}
- public function decide(Request $r,Verification $verification,FraudScoringService $fraud){$d=$r->validate(['decision'=>'required|in:verified,rejected','reason'=>'nullable|required_if:decision,rejected|string|max:1000']);DB::transaction(function()use($r,$verification,$d){$verification->update(['verification_status'=>$d['decision'],'verified_by'=>$r->user()->id,'verified_at'=>now(),'rejection_reason'=>$d['decision']==='rejected'?$d['reason']:null]);AuditLog::create(['admin_id'=>$r->user()->id,'action_type'=>'kyc_'.$d['decision'],'target_type'=>'verification','target_id'=>$verification->id,'notes'=>$d['reason']??'Student identity documents reviewed.']);});$verification->user->notify(new KycStatusNotification($d['decision'],$d['reason']??null));$fraud->evaluate($verification->user->fresh());return back()->with('success','Verification decision recorded.');}
- public function flags(Request $r){$q=FraudFlag::query();if($status=$r->string('status')->value())$q->where('status',$status);if($level=$r->string('risk')->value())$level==='high'?$q->where('risk_score','>=',60):($level==='medium'?$q->whereBetween('risk_score',[30,59]):null);return view('admin.flags',['flags'=>$q->latest()->paginate(20)->withQueryString()]);}
- public function reviewFlag(Request $r,FraudFlag $flag){$d=$r->validate(['status'=>'required|in:reviewed,dismissed']);$flag->update(['status'=>$d['status'],'reviewed_by'=>$r->user()->id,'reviewed_at'=>now()]);AuditLog::create(['admin_id'=>$r->user()->id,'action_type'=>'fraud_'.$d['status'],'target_type'=>'fraud_flag','target_id'=>$flag->id,'notes'=>'Risk score '.$flag->risk_score.': '.$flag->flag_reason]);return back()->with('success','Fraud flag updated.');}
- public function audits(Request $r){$q=AuditLog::with('admin');if($action=$r->string('action')->trim()->value())$q->where('action_type','like',"%$action%");return view('admin.audits',['logs'=>$q->latest()->paginate(30)->withQueryString()]);}
+
+use App\Models\AuditLog;
+use App\Models\Dispute;
+use App\Models\FraudFlag;
+use App\Models\Listing;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Verification;
+use App\Notifications\KycStatusNotification;
+use App\Services\FraudScoringService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AdminController extends Controller
+{
+    public function dashboard()
+    {
+        return view('admin.dashboard', ['stats' => ['students' => User::where('role', 'student')->count(), 'verified' => Verification::where('verification_status', 'verified')->count(), 'pending' => Verification::where('verification_status', 'pending')->count(), 'rejected' => Verification::where('verification_status', 'rejected')->count(), 'listings' => Listing::where('status', 'active')->count(), 'held' => Transaction::where('status', 'paid_held')->count(), 'disputes' => Dispute::whereIn('status', ['open', 'under_review'])->count(), 'flags' => FraudFlag::where('status', 'open')->count()], 'pending' => Verification::with('user')->where('verification_status', 'pending')->latest()->take(8)->get()]);
+    }
+
+    public function verifications()
+    {
+        return view('admin.verifications', ['verifications' => Verification::with('user')->latest()->paginate(20)]);
+    }
+
+    public function decide(Request $r, Verification $verification, FraudScoringService $fraud)
+    {
+        $d = $r->validate(['decision' => 'required|in:verified,rejected', 'reason' => 'nullable|required_if:decision,rejected|string|max:1000']);
+        DB::transaction(function () use ($r, $verification, $d) {
+            $verification->update(['verification_status' => $d['decision'], 'verified_by' => $r->user()->id, 'verified_at' => now(), 'rejection_reason' => $d['decision'] === 'rejected' ? $d['reason'] : null]);
+            AuditLog::create(['admin_id' => $r->user()->id, 'action_type' => 'kyc_'.$d['decision'], 'target_type' => 'verification', 'target_id' => $verification->id, 'notes' => $d['reason'] ?? 'Student identity documents reviewed.']);
+        }
+        );
+        $verification->user->notify(new KycStatusNotification($d['decision'], $d['reason'] ?? null));
+        $fraud->evaluate($verification->user->fresh());
+
+        return back()->with('success', 'Verification decision recorded.');
+    }
+
+    public function flags(Request $r)
+    {
+        $q = FraudFlag::query();
+        if ($status = $r->string('status')->value()) {
+            $q->where('status', $status);
+        }
+        if ($level = $r->string('risk')->value()) {
+            $level === 'high' ? $q->where('risk_score', '>=', 60) : ($level === 'medium' ? $q->whereBetween('risk_score', [30, 59]) : null);
+        }
+
+        return view('admin.flags', ['flags' => $q->latest()->paginate(20)->withQueryString()]);
+    }
+
+    public function reviewFlag(Request $r, FraudFlag $flag)
+    {
+        $d = $r->validate(['status' => 'required|in:reviewed,dismissed']);
+        $flag->update(['status' => $d['status'], 'reviewed_by' => $r->user()->id, 'reviewed_at' => now()]);
+        AuditLog::create(['admin_id' => $r->user()->id, 'action_type' => 'fraud_'.$d['status'], 'target_type' => 'fraud_flag', 'target_id' => $flag->id, 'notes' => 'Risk score '.$flag->risk_score.': '.$flag->flag_reason]);
+
+        return back()->with('success', 'Fraud flag updated.');
+    }
+
+    public function audits(Request $r)
+    {
+        $q = AuditLog::with('admin');
+        if ($action = $r->string('action')->trim()->value()) {
+            $q->where('action_type', 'like', "%$action%");
+        }
+
+        return view('admin.audits', ['logs' => $q->latest()->paginate(30)->withQueryString()]);
+    }
 }

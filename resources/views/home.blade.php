@@ -1,4 +1,49 @@
 @extends('layouts.app') @section('content')
-<section class="overflow-hidden bg-white"><div class="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24"><div><div class="mb-5 inline-flex items-center gap-2 border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-900">For verified DELSU students</div><h1 class="max-w-2xl text-4xl font-black leading-tight tracking-tight text-blue-950 sm:text-6xl">Buy and sell safely within DELSU.</h1><p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">A student marketplace built around identity verification, two-step login and protected payments — so campus trading starts with trust.</p><div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('listings.index') }}" class="rounded-lg bg-blue-950 px-6 py-3 font-bold text-white">Explore marketplace</a><a href="{{ route('register') }}" class="rounded-lg border border-slate-300 bg-white px-6 py-3 font-bold">Start selling</a></div></div><div class="border border-slate-200 bg-slate-50 p-6 sm:p-8"><div class="mb-6 flex items-center justify-between"><span class="font-bold text-blue-950">Trust at every step</span><span class="text-xs font-semibold text-slate-500">{{ number_format($listingCount) }} active listings</span></div><div class="space-y-3">@foreach([['01','Verify your student identity','Student ID and current fee receipt are reviewed by an administrator.'],['02','Sign in with two factors','Password plus a time-limited email security code protects your account.'],['03','Pay through a protected flow','Payments are verified server-side before a transaction is marked protected.']] as $step)<div class="flex gap-4 border-t border-slate-200 py-5"><span class="font-mono text-sm text-blue-700">{{ $step[0] }}</span><div><h3 class="font-bold">{{ $step[1] }}</h3><p class="mt-1 text-sm leading-6 text-slate-600">{{ $step[2] }}</p></div></div>@endforeach</div></div></div></section>
-<section id="security" class="mx-auto max-w-7xl px-4 py-16 sm:px-6"><div class="max-w-2xl"><p class="text-sm font-bold uppercase tracking-widest text-blue-700">Security by design</p><h2 class="mt-3 text-3xl font-black text-blue-950">Not another anonymous campus classifieds page.</h2></div><div class="mt-10 grid gap-px overflow-hidden border bg-slate-200 md:grid-cols-3">@foreach([['Verified identity','Only administrator-verified student accounts can publish or purchase.'],['Fraud monitoring','Rule-based risk scoring surfaces suspicious behaviour for review.'],['Dispute controls','Disputed transactions pause normal release while an administrator reviews the case.']] as $x)<div class="bg-white p-7"><h3 class="font-bold text-blue-950">{{ $x[0] }}</h3><p class="mt-2 text-sm leading-6 text-slate-600">{{ $x[1] }}</p></div>@endforeach</div></section>
+    <section class="overflow-hidden bg-white">
+        <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
+            <div>
+                <div
+                    class="mb-5 inline-flex items-center gap-2 border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-900">
+                    For verified DELSU students</div>
+                <h1 class="max-w-2xl text-4xl font-black leading-tight tracking-tight text-blue-950 sm:text-6xl">Buy and sell
+                    safely within DELSU.</h1>
+                <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">A student marketplace built around identity
+                    verification, two-step login and protected payments — so campus trading starts with trust.</p>
+                <div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('listings.index') }}"
+                        class="rounded-lg bg-blue-950 px-6 py-3 font-bold text-white">Explore marketplace</a><a
+                        href="{{ route('register') }}"
+                        class="rounded-lg border border-slate-300 bg-white px-6 py-3 font-bold">Start selling</a></div>
+            </div>
+            <div class="border border-slate-200 bg-slate-50 p-6 sm:p-8">
+                <div class="mb-6 flex items-center justify-between"><span class="font-bold text-blue-950">Trust at every
+                        step</span><span class="text-xs font-semibold text-slate-500">{{ number_format($listingCount) }}
+                        active listings</span></div>
+                <div class="space-y-3">
+                    @foreach ([['01', 'Verify your student identity', 'Student ID and current fee receipt are reviewed by an administrator.'], ['02', 'Sign in with two factors', 'Password plus a time-limited email security code protects your account.'], ['03', 'Pay through a protected flow', 'Payments are verified server-side before a transaction is marked protected.']] as $step)
+                        <div class="flex gap-4 border-t border-slate-200 py-5"><span
+                                class="font-mono text-sm text-blue-700">{{ $step[0] }}</span>
+                            <div>
+                                <h3 class="font-bold">{{ $step[1] }}</h3>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="security" class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <div class="max-w-2xl">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Security by design</p>
+            <h2 class="mt-3 text-3xl font-black text-blue-950">Not another anonymous campus classifieds page.</h2>
+        </div>
+        <div class="mt-10 grid gap-px overflow-hidden border bg-slate-200 md:grid-cols-3">
+            @foreach ([['Verified identity', 'Only administrator-verified student accounts can publish or purchase.'], ['Fraud monitoring', 'Rule-based risk scoring surfaces suspicious behaviour for review.'], ['Dispute controls', 'Disputed transactions pause normal release while an administrator reviews the case.']] as $x)
+                <div class="bg-white p-7">
+                    <h3 class="font-bold text-blue-950">{{ $x[0] }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $x[1] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </section>
 @endsection
