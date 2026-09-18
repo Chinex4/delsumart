@@ -1,0 +1,44 @@
+name: Format source code
+
+on:
+  push:
+    branches:
+      - chore/readable-code-formatting
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout formatting branch
+        uses: actions/checkout@v4
+        with:
+          ref: chore/readable-code-formatting
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Format PHP with Laravel Pint
+        run: ./vendor/bin/pint
+
+      - name: Commit formatter output
+        run: |
+          if git diff --quiet; then
+            echo "No PHP formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app bootstrap config database routes tests
+          git commit -m "style: apply Laravel Pint formatting"
+          git push origin chore/readable-code-formatting
