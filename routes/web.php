@@ -1,5 +1,5 @@
 <?php
-use App\Http\Controllers\{AdminController,AdminDisputeController,AuthController,DashboardController,DisputeController,KycController,KycDocumentController,ListingController,PaymentController,TransactionController};
+use App\Http\Controllers\{AdminController,AdminDisputeController,AdminMarketplaceController,AdminStudentController,AuthController,DashboardController,DisputeController,KycController,KycDocumentController,ListingController,PaymentController,PrivateEvidenceController,TransactionController};
 use App\Models\Listing; use Illuminate\Support\Facades\Route;
 Route::get('/',fn()=>view('home',['recent'=>Listing::with(['seller.verification','images'])->where('status','active')->latest()->take(8)->get(),'listingCount'=>Listing::where('status','active')->count()]))->name('home');
 Route::get('/marketplace',[ListingController::class,'index'])->name('listings.index');
@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function(){
  Route::get('/verification',[KycController::class,'show'])->name('kyc.show');
  Route::post('/verification',[KycController::class,'store'])->middleware('throttle:4,10')->name('kyc.store');
  Route::get('/verification/{verification}/documents/{type}',[KycDocumentController::class,'show'])->name('kyc.documents.show');
+ Route::get('/disputes/{dispute}/evidence',[PrivateEvidenceController::class,'show'])->name('disputes.evidence');
  Route::middleware('verified.student')->group(function(){
   Route::post('/listings',[ListingController::class,'store'])->name('listings.store');
   Route::delete('/listings/{listing}',[ListingController::class,'destroy'])->name('listings.destroy');
@@ -27,8 +28,13 @@ Route::middleware('auth')->group(function(){
  });
  Route::prefix('admin')->middleware('admin')->name('admin.')->group(function(){
   Route::get('/',[AdminController::class,'dashboard'])->name('dashboard');
+  Route::get('/students',[AdminStudentController::class,'index'])->name('students');
+  Route::get('/students/{student}',[AdminStudentController::class,'show'])->name('students.show');
+  Route::patch('/students/{student}/status',[AdminStudentController::class,'status'])->name('students.status');
   Route::get('/verifications',[AdminController::class,'verifications'])->name('verifications');
   Route::patch('/verifications/{verification}',[AdminController::class,'decide'])->name('verifications.decide');
+  Route::get('/listings',[AdminMarketplaceController::class,'listings'])->name('listings');
+  Route::get('/transactions',[AdminMarketplaceController::class,'transactions'])->name('transactions');
   Route::get('/disputes',[AdminDisputeController::class,'index'])->name('disputes');
   Route::patch('/disputes/{dispute}',[AdminDisputeController::class,'resolve'])->name('disputes.resolve');
   Route::get('/fraud-flags',[AdminController::class,'flags'])->name('flags');
