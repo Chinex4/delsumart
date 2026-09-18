@@ -1,0 +1,35 @@
+<?php
+use App\Http\Controllers\{AdminController,AuthController,DashboardController,DisputeController,KycController,ListingController,PaymentController,TransactionController};
+use App\Models\Listing; use Illuminate\Support\Facades\Route;
+Route::get('/',fn()=>view('home',['recent'=>Listing::with(['seller.verification','images'])->where('status','active')->latest()->take(8)->get(),'listingCount'=>Listing::where('status','active')->count()]))->name('home');
+Route::get('/marketplace',[ListingController::class,'index'])->name('listings.index');
+Route::get('/marketplace/{listing}',[ListingController::class,'show'])->name('listings.show');
+Route::view('/login','auth.login')->middleware('guest')->name('login');
+Route::view('/register','auth.register')->middleware('guest')->name('register');
+Route::post('/register',[AuthController::class,'register'])->middleware('guest')->name('register.store');
+Route::post('/login',[AuthController::class,'login'])->middleware(['guest','throttle:6,1'])->name('login.store');
+Route::view('/mfa','auth.mfa')->middleware('guest')->name('mfa.show');
+Route::post('/mfa',[AuthController::class,'verifyMfa'])->middleware(['guest','throttle:8,1'])->name('mfa.verify');
+Route::post('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
+Route::post('/paystack/webhook',[PaymentController::class,'webhook'])->name('payments.webhook');
+Route::middleware('auth')->group(function(){
+ Route::get('/dashboard',DashboardController::class)->name('dashboard');
+ Route::get('/verification',[KycController::class,'show'])->name('kyc.show');
+ Route::post('/verification',[KycController::class,'store'])->middleware('throttle:4,10')->name('kyc.store');
+ Route::middleware('verified.student')->group(function(){
+  Route::post('/listings',[ListingController::class,'store'])->name('listings.store');
+  Route::delete('/listings/{listing}',[ListingController::class,'destroy'])->name('listings.destroy');
+  Route::post('/checkout/{listing}',[PaymentController::class,'initialize'])->middleware('throttle:5,1')->name('payments.initialize');
+  Route::get('/payments/callback',[PaymentController::class,'callback'])->name('payments.callback');
+  Route::post('/transactions/{transaction}/confirm',[TransactionController::class,'confirm'])->name('transactions.confirm');
+  Route::post('/transactions/{transaction}/disputes',[DisputeController::class,'store'])->name('disputes.store');
+ });
+ Route::prefix('admin')->middleware('admin')->name('admin.')->group(function(){
+  Route::get('/',[AdminController::class,'dashboard'])->name('dashboard');
+  Route::get('/verifications',[AdminController::class,'verifications'])->name('verifications');
+  Route::patch('/verifications/{verification}',[AdminController::class,'decide'])->name('verifications.decide');
+  Route::get('/fraud-flags',[AdminController::class,'flags'])->name('flags');
+  Route::patch('/fraud-flags/{flag}',[AdminController::class,'reviewFlag'])->name('flags.review');
+  Route::get('/audit-logs',[AdminController::class,'audits'])->name('audits');
+ });
+});
