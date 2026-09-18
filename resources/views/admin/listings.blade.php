@@ -1,1 +1,40 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-7xl px-4 py-10"><h1 class="text-3xl font-black text-blue-950">Marketplace listings</h1><form class="mt-6 flex flex-wrap gap-2"><input name="q" value="{{ request('q') }}" placeholder="Search listing" class="border bg-white px-3 py-2"><select name="status" class="border bg-white px-3 py-2"><option value="">All statuses</option>@foreach(['active','sold','removed'] as $s)<option @selected(request('status')===$s)>{{ $s }}</option>@endforeach</select><button class="bg-blue-950 px-4 py-2 font-bold text-white">Filter</button></form><div class="mt-6 overflow-x-auto border bg-white"><table class="min-w-full text-sm"><thead class="bg-slate-100 text-left"><tr><th class="p-3">Listing</th><th class="p-3">Seller</th><th class="p-3">Price</th><th class="p-3">Status</th><th class="p-3">Created</th></tr></thead><tbody class="divide-y">@foreach($listings as $l)<tr><td class="p-3"><a class="font-bold text-blue-800" href="{{ route('listings.show',$l) }}">{{ $l->title }}</a></td><td class="p-3">{{ $l->seller->name }}</td><td class="p-3">₦{{ number_format($l->price,2) }}</td><td class="p-3 uppercase">{{ $l->status }}</td><td class="p-3">{{ $l->created_at->format('d M Y H:i') }}</td></tr>@endforeach</tbody></table></div><div class="mt-6">{{ $listings->links() }}</div></div>@endsection
+@extends('layouts.app') @section('content')
+    <div class="mx-auto max-w-7xl px-4 py-10">
+        <h1 class="text-3xl font-black text-blue-950">Marketplace listings</h1>
+        <form class="mt-6 flex flex-wrap gap-2"><input name="q" value="{{ request('q') }}" placeholder="Search listing"
+                class="border bg-white px-3 py-2"><select name="status" class="border bg-white px-3 py-2">
+                <option value="">All statuses</option>
+                @foreach (['active', 'sold', 'removed'] as $s)
+                    <option @selected(request('status') === $s)>{{ $s }}</option>
+                @endforeach
+            </select>
+            <button class="bg-blue-950 px-4 py-2 font-bold text-white">Filter</button>
+        </form>
+        <div class="mt-6 overflow-x-auto border bg-white">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-100 text-left">
+                    <tr>
+                        <th class="p-3">Listing</th>
+                        <th class="p-3">Seller</th>
+                        <th class="p-3">Price</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3">Created</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @foreach ($listings as $l)
+                        <tr>
+                            <td class="p-3"><a class="font-bold text-blue-800"
+                                    href="{{ route('listings.show', $l) }}">{{ $l->title }}</a></td>
+                            <td class="p-3">{{ $l->seller->name }}</td>
+                            <td class="p-3">₦{{ number_format($l->price, 2) }}</td>
+                            <td class="p-3 uppercase">{{ $l->status }}</td>
+                            <td class="p-3">{{ $l->created_at->format('d M Y H:i') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-6">{{ $listings->links() }}</div>
+    </div>
+@endsection

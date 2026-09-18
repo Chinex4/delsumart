@@ -61,6 +61,6 @@ Route::middleware('auth')->group(function () {
         Route::patch('/disputes/{dispute}', [AdminDisputeController::class, 'resolve'])->name('disputes.resolve');
         Route::get('/fraud-flags', [AdminController::class, 'flags'])->name('flags');
         Route::patch('/fraud-flags/{flag}', [AdminController::class, 'reviewFlag'])->name('flags.review');
-        Route::get('/audit-logs',[AdminController::class, 'audits'])->name('audits');
+        Route::get('/audit-logs', [AdminController::class, 'audits'])->name('audits');
     });
 });

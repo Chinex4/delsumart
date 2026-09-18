@@ -1,1 +1,30 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-6xl px-4 py-12"><h1 class="text-3xl font-black text-blue-950">Fraud review</h1><p class="mt-2 text-slate-600">Scores are rule-based and each flag explains the signals that triggered review.</p><div class="mt-8 space-y-4">@forelse($flags as $flag)<article class="border bg-white p-5"><div class="flex gap-5"><div class="min-w-16 text-center"><div class="text-3xl font-black {{ $flag->risk_score>=60?'text-red-700':'text-amber-700' }}">{{ $flag->risk_score }}</div><div class="text-xs font-bold uppercase">risk</div></div><div class="flex-1"><p class="font-bold">{{ ucfirst($flag->related_type) }} #{{ $flag->related_id }}</p><p class="mt-2 text-sm text-slate-600">{{ $flag->flag_reason }}</p><form method="POST" action="{{ route('admin.flags.review',$flag) }}" class="mt-4 flex gap-2">@csrf @method('PATCH')<button name="status" value="reviewed" class="rounded border px-3 py-2 text-xs font-bold">Mark reviewed</button><button name="status" value="dismissed" class="rounded border px-3 py-2 text-xs font-bold">Dismiss</button></form></div></div></article>@empty<div class="border border-dashed bg-white p-10 text-center text-slate-500">No fraud flags require review.</div>@endforelse</div><div class="mt-8">{{ $flags->links() }}</div></div>@endsection
+@extends('layouts.app') @section('content')
+    <div class="mx-auto max-w-6xl px-4 py-12">
+        <h1 class="text-3xl font-black text-blue-950">Fraud review</h1>
+        <p class="mt-2 text-slate-600">Scores are rule-based and each flag explains the signals that triggered review.</p>
+        <div class="mt-8 space-y-4">
+            @forelse($flags as $flag)
+                <article class="border bg-white p-5">
+                    <div class="flex gap-5">
+                        <div class="min-w-16 text-center">
+                            <div class="text-3xl font-black {{ $flag->risk_score >= 60 ? 'text-red-700' : 'text-amber-700' }}">
+                                {{ $flag->risk_score }}</div>
+                            <div class="text-xs font-bold uppercase">risk</div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold">{{ ucfirst($flag->related_type) }} #{{ $flag->related_id }}</p>
+                            <p class="mt-2 text-sm text-slate-600">{{ $flag->flag_reason }}</p>
+                            <form method="POST" action="{{ route('admin.flags.review', $flag) }}" class="mt-4 flex gap-2">
+                                @csrf @method('PATCH')<button name="status" value="reviewed"
+                                    class="rounded border px-3 py-2 text-xs font-bold">Mark reviewed</button><button
+                                    name="status" value="dismissed"
+                                    class="rounded border px-3 py-2 text-xs font-bold">Dismiss</button></form>
+                        </div>
+                    </div>
+            </article>@empty<div class="border border-dashed bg-white p-10 text-center text-slate-500">No fraud flags
+                    require review.</div>
+            @endforelse
+        </div>
+        <div class="mt-8">{{ $flags->links() }}</div>
+    </div>
+@endsection

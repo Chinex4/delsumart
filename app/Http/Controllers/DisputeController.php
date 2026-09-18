@@ -33,6 +33,6 @@ class DisputeController extends Controller
         $fraud->evaluate($transaction->buyer);
         $fraud->evaluate($transaction->seller);
 
-        return back()->with('success','Dispute opened. Release is paused while an administrator reviews it.');
+        return back()->with('success', 'Dispute opened. Release is paused while an administrator reviews it.');
     }
 }

@@ -24,6 +24,6 @@ class KycStatusNotification extends Notification
             return $m->greeting('Verification approved')->line('Your DELSU student identity has been verified. Marketplace trading is now unlocked.');
         }
 
-return $m->greeting('Verification needs attention')->line('Your verification submission was not approved.')->line($this->reason ?: 'Please review your verification page and resubmit the requested documents.');
+        return $m->greeting('Verification needs attention')->line('Your verification submission was not approved.')->line($this->reason ?: 'Please review your verification page and resubmit the requested documents.');
     }
 }

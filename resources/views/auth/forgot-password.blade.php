@@ -1,1 +1,15 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-md px-4 py-16"><h1 class="text-3xl font-black text-blue-950">Reset your password</h1><p class="mt-2 text-sm text-slate-600">Enter your registered DELSU marketplace email. We’ll send a time-limited reset link.</p><form method="POST" action="{{ route('password.email') }}" class="mt-7 space-y-4 border bg-white p-6">@csrf<label class="block text-sm font-semibold">Email<input type="email" name="email" required value="{{ old('email') }}" class="mt-1 w-full border p-3"></label>@error('email')<p class="text-sm text-red-700">{{ $message }}</p>@enderror<button class="w-full bg-blue-950 px-4 py-3 font-bold text-white">Send reset link</button></form></div>@endsection
+@extends('layouts.app') @section('content')
+    <div class="mx-auto max-w-md px-4 py-16">
+        <h1 class="text-3xl font-black text-blue-950">Reset your password</h1>
+        <p class="mt-2 text-sm text-slate-600">Enter your registered DELSU marketplace email. We’ll send a time-limited reset
+            link.</p>
+        <form method="POST" action="{{ route('password.email') }}" class="mt-7 space-y-4 border bg-white p-6">@csrf<label
+                class="block text-sm font-semibold">Email<input type="email" name="email" required
+                    value="{{ old('email') }}" class="mt-1 w-full border p-3"></label>
+            @error('email')
+                <p class="text-sm text-red-700">{{ $message }}</p>
+            @enderror
+            <button class="w-full bg-blue-950 px-4 py-3 font-bold text-white">Send reset link</button>
+        </form>
+    </div>
+@endsection

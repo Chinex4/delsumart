@@ -19,7 +19,7 @@ class SecurityAndMarketplaceTest extends TestCase
             $u->verification()->create(['matric_no' => $u->matric_no, 'full_name' => $u->name, 'programme' => $u->programme, 'level' => $u->level, 'id_card_image' => 'private/id', 'fee_receipt_image' => 'private/fee', 'verification_status' => 'verified']);
         }
 
-return $u;
+        return $u;
     }
 
     public function test_pending_student_cannot_create_listing(): void

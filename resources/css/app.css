@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @source "../views/**/*.blade.php";
 @source "../../app/**/*.php";
-:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#0f172a;background:#f8fafc}
-[x-cloak]{display:none!important}
-.focus-ring{ @apply focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2; }
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+}
+[x-cloak] {
+  display: none !important;
+}
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2;
+}

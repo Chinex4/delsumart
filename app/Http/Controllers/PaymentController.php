@@ -50,7 +50,7 @@ class PaymentController
             $fraud->evaluate($tx->seller);
         }
 
-return redirect()->route('dashboard')->with('success', 'Payment verified and marked as protected.');
+        return redirect()->route('dashboard')->with('success', 'Payment verified and marked as protected.');
     }
 
     public function webhook(Request $r, PaystackService $paystack)

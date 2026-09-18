@@ -22,7 +22,7 @@ class AdminAndTransactionSecurityTest extends TestCase
             $u->verification()->create(['matric_no' => $u->matric_no, 'full_name' => $u->name, 'programme' => $u->programme, 'level' => $u->level, 'id_card_image' => 'kyc/'.$id.'/id.pdf', 'fee_receipt_image' => 'kyc/'.$id.'/fee.pdf', 'verification_status' => 'verified']);
         }
 
-return $u;
+        return $u;
     }
 
     public function test_admin_can_suspend_student_and_action_is_audited(): void

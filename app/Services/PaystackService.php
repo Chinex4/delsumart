@@ -19,7 +19,7 @@ class PaystackService
             throw new RuntimeException('Unable to initialize payment.');
         }
 
-return $r->json('data');
+        return $r->json('data');
     }
 
     public function verify(string $reference): array
@@ -29,7 +29,7 @@ return $r->json('data');
             throw new RuntimeException('Unable to verify payment.');
         }
 
-return $r->json('data');
+        return $r->json('data');
     }
 
     public function validWebhook(string $payload, ?string $signature): bool

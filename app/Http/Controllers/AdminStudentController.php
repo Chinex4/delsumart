@@ -37,6 +37,6 @@ class AdminStudentController extends Controller
         $student->update(['account_status' => $d['account_status']]);
         AuditLog::create(['admin_id' => $r->user()->id, 'action_type' => 'student_'.$d['account_status'], 'target_type' => 'user', 'target_id' => $student->id, 'notes' => $d['reason']]);
 
-        return back()->with('success','Student account status updated and audited.');
+        return back()->with('success', 'Student account status updated and audited.');
     }
 }
