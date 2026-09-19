@@ -1,0 +1,10 @@
+@extends('layouts.dashboard')
+@section('title','My listings')
+@section('content')
+<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">SELLING</p><h1 class="mt-2 text-3xl font-black">My listings</h1><p class="mt-2 text-slate-500">Manage the products you have published on DelsuMart.</p></div><a href="{{ route('listings.create') }}" class="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-sm">+ Create listing</a></div>
+<div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+@forelse($listings as $listing)
+<article class="overflow-hidden rounded-2xl border bg-white shadow-sm"><div class="aspect-[16/10] bg-slate-100">@if($listing->images->first())<img class="h-full w-full object-cover" src="{{ asset('storage/'.$listing->images->first()->path) }}" alt="{{ $listing->title }}">@else<div class="grid h-full place-items-center text-sm text-slate-400">No image uploaded</div>@endif</div><div class="p-5"><div class="flex items-start justify-between gap-3"><div><p class="text-xs font-bold uppercase text-blue-600">{{ $listing->category }}</p><h2 class="mt-1 font-black">{{ $listing->title }}</h2></div><span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase">{{ $listing->status }}</span></div><p class="mt-4 text-xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-5 flex gap-2"><a href="{{ route('listings.show',$listing) }}" class="rounded-lg border px-3 py-2 text-xs font-bold">View</a>@if($listing->status==='active')<form method="POST" action="{{ route('listings.destroy',$listing) }}">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Remove</button></form>@endif</div></div></article>
+@empty<div class="col-span-full rounded-2xl border border-dashed bg-white p-12 text-center"><h2 class="font-black">No listings yet</h2><p class="mt-2 text-sm text-slate-500">Publish your first item to start selling to verified DELSU students.</p></div>@endforelse
+</div><div class="mt-8">{{ $listings->links() }}</div>
+@endsection
