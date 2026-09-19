@@ -24,7 +24,14 @@ class ListingController extends Controller
             $q->where('price', '<=', $max);
         }
 
-        return view('marketplace.index', ['listings' => $q->latest()->paginate(12)->withQueryString()]);
+        match ($r->string('sort')->value()) {
+            'price_asc' => $q->orderBy('price'),
+            'price_desc' => $q->orderByDesc('price'),
+            'oldest' => $q->oldest(),
+            default => $q->latest(),
+        };
+
+        return view('marketplace.index', ['listings' => $q->paginate(12)->withQueryString()]);
     }
 
     public function show(Listing $listing)
@@ -32,6 +39,11 @@ class ListingController extends Controller
         $listing->load(['seller.verification', 'images']);
 
         return view('marketplace.show', compact('listing'));
+    }
+
+    public function create()
+    {
+        return view('account.listing-create');
     }
 
     public function store(Request $r, FraudScoringService $fraud)

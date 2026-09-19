@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-6xl px-4 py-10">
         <a href="{{ route('admin.students') }}" class="text-sm font-bold text-blue-800">← Students</a>
         <div class="mt-5 grid gap-6 lg:grid-cols-[1fr_340px]">

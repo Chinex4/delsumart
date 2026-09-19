@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-6xl px-4 py-12">
         <h1 class="text-3xl font-black text-blue-950">Administrative audit log</h1>
         <div class="mt-8 overflow-x-auto border bg-white">

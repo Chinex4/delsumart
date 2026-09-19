@@ -1,42 +1,7 @@
-@extends('layouts.app') @section('content')
-    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-                <p class="text-sm font-bold uppercase tracking-widest text-blue-700">DELSU MARKETPLACE</p>
-                <h1 class="mt-2 text-4xl font-black text-blue-950">Find what you need on campus.</h1>
-            </div>
-            <form class="flex w-full max-w-xl gap-2"><input name="q" value="{{ request('q') }}"
-                    placeholder="Search phones, books, services…"
-                    class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3"><button
-                    class="rounded-lg bg-blue-950 px-5 font-bold text-white">Search</button></form>
-        </div>
-        <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            @forelse($listings as $listing)
-                <a href="{{ route('listings.show', $listing) }}"
-                    class="group overflow-hidden border border-slate-200 bg-white">
-                    <div class="aspect-[4/3] bg-slate-100">
-                        @if ($listing->images->first())
-                            <img src="{{ asset('storage/' . $listing->images->first()->path) }}" alt=""
-                            class="h-full w-full object-cover">@else<div
-                                class="flex h-full items-center justify-center text-sm text-slate-400">No image</div>
-                        @endif
-                    </div>
-                    <div class="p-4">
-                        <p class="text-xs font-bold uppercase tracking-wide text-blue-700">{{ $listing->category }}</p>
-                        <h2 class="mt-1 line-clamp-1 font-bold group-hover:text-blue-800">{{ $listing->title }}</h2>
-                        <p class="mt-3 text-xl font-black text-blue-950">₦{{ number_format($listing->price, 2) }}</p>
-                        <p class="mt-3 text-xs text-slate-500">{{ $listing->seller->name }} · @if ($listing->seller->isVerifiedStudent())
-                                <span class="font-bold text-emerald-700">Verified</span>
-                            @endif
-                        </p>
-                    </div>
-            </a>@empty<div class="col-span-full border border-dashed bg-white p-12 text-center">
-                    <h2 class="font-bold">No matching listings yet</h2>
-                    <p class="mt-2 text-sm text-slate-500">Try a broader search or check back when students add more items.
-                    </p>
-                </div>
-            @endforelse
-        </div>
-        <div class="mt-10">{{ $listings->links() }}</div>
-    </div>
+@extends('layouts.app')
+@section('content')
+<div class="border-b bg-white"><div class="mx-auto max-w-7xl px-4 py-12 sm:px-6"><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">DELSU MARKETPLACE</p><h1 class="mt-2 text-4xl font-black sm:text-5xl">Find your next campus essential.</h1><p class="mt-3 max-w-2xl text-slate-500">Browse active listings from verified DELSU students and filter by what matters to you.</p></div></div>
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6"><form class="rounded-2xl border bg-white p-4 shadow-sm"><div class="grid gap-3 lg:grid-cols-[1fr_200px_140px_140px_180px_auto]"><input name="q" value="{{ request('q') }}" placeholder="Search listings..." class="rounded-xl border border-slate-300 px-4 py-3"><select name="category" class="rounded-xl border border-slate-300 px-3 py-3"><option value="">All categories</option>@foreach(['Phones & Tablets','Laptops & Computers','Books & Study','Fashion','Hostel & Home','Accessories','Other'] as $category)<option value="{{ $category }}" @selected(request('category')===$category)>{{ $category }}</option>@endforeach</select><input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Min ₦" class="rounded-xl border border-slate-300 px-3 py-3"><input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max ₦" class="rounded-xl border border-slate-300 px-3 py-3"><select name="sort" class="rounded-xl border border-slate-300 px-3 py-3"><option value="">Newest first</option><option value="price_asc" @selected(request('sort')==='price_asc')>Price: low to high</option><option value="price_desc" @selected(request('sort')==='price_desc')>Price: high to low</option><option value="oldest" @selected(request('sort')==='oldest')>Oldest first</option></select><button class="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Apply</button></div>@if(request()->hasAny(['q','category','min_price','max_price','sort']))<a href="{{ route('listings.index') }}" class="mt-3 inline-block text-xs font-bold text-blue-600">Reset filters</a>@endif</form>
+<div class="mt-8 flex items-center justify-between"><p class="text-sm text-slate-500"><strong class="text-slate-900">{{ $listings->total() }}</strong> active listings</p></div>
+<div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">@forelse($listings as $listing)<a href="{{ route('listings.show',$listing) }}" class="group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div class="aspect-[4/3] overflow-hidden bg-slate-100">@if($listing->images->first())<img src="{{ asset('storage/'.$listing->images->first()->path) }}" alt="{{ $listing->title }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">@else<div class="grid h-full place-items-center bg-gradient-to-br from-blue-50 to-slate-100 text-sm font-bold text-slate-400">No product photo</div>@endif</div><div class="p-5"><p class="text-[11px] font-black uppercase tracking-wider text-blue-600">{{ $listing->category }}</p><h2 class="mt-1 line-clamp-1 font-black">{{ $listing->title }}</h2><p class="mt-3 text-xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>{{ $listing->seller->name }}</span>@if($listing->seller->isVerifiedStudent())<span class="font-bold text-emerald-600">✓ Verified</span>@endif</div></div></a>@empty<div class="col-span-full rounded-2xl border border-dashed bg-white p-14 text-center"><h2 class="font-black">No finds this time</h2><p class="mt-2 text-sm text-slate-500">Try clearing a filter or searching for something broader.</p></div>@endforelse</div><div class="mt-10">{{ $listings->links() }}</div></div>
 @endsection

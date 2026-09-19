@@ -1,0 +1,6 @@
+@extends('layouts.dashboard')
+@section('title','Disputes')
+@section('content')
+<p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">RESOLUTION CENTER</p><h1 class="mt-2 text-3xl font-black">Your disputes</h1><p class="mt-2 text-slate-500">See disputes connected to transactions where you are the buyer or seller.</p>
+<div class="mt-8 space-y-4">@forelse($disputes as $d)<article class="rounded-2xl border bg-white p-6 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-bold uppercase text-blue-600">{{ $d->category }}</p><h2 class="mt-1 font-black">{{ $d->transaction->listing->title }}</h2><p class="mt-1 text-xs font-mono text-slate-400">{{ $d->transaction->paystack_reference }}</p></div><span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase text-amber-800">{{ str_replace('_',' ',$d->status) }}</span></div><p class="mt-5 text-sm leading-6 text-slate-600">{{ $d->details }}</p>@if($d->resolution)<div class="mt-5 rounded-xl bg-slate-50 p-4 text-sm"><strong>Resolution:</strong> {{ $d->resolution }}</div>@endif</article>@empty<div class="rounded-2xl border border-dashed bg-white p-12 text-center text-slate-500">You have no disputes.</div>@endforelse</div><div class="mt-8">{{ $disputes->links() }}</div>
+@endsection
