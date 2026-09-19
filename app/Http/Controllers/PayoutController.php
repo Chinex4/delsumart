@@ -144,6 +144,7 @@ class PayoutController extends Controller
     private function bankSessionValid(Request $request): bool
     {
         $verifiedAt = (int) $request->session()->get('payout_bank_verified_at', 0);
+
         return $verifiedAt > 0 && $verifiedAt >= now()->subMinutes(15)->timestamp;
     }
 }
