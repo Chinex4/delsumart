@@ -106,6 +106,7 @@ class PayoutController extends Controller
             'account_number' => $data['account_number'], 'account_name' => $resolved['account_name'],
             'paystack_recipient_code' => $recipient['recipient_code'] ?? null, 'verified_at' => now(),
         ]);
+
         $request->session()->forget('payout_bank_verified_at');
 
         return back()->with('success', 'Your verified payout bank account has been saved.');
@@ -126,6 +127,7 @@ class PayoutController extends Controller
             if ($amount > max(0, $totalSales - $reserved)) {
                 throw ValidationException::withMessages(['amount' => 'This amount is higher than your available payout balance.']);
             }
+
             PayoutRequest::create([
                 'user_id' => $user->id, 'bank_account_id' => $user->bankAccount->id,
                 'amount' => $amount, 'status' => 'pending', 'reference' => 'PO-'.strtoupper(Str::random(14)),
