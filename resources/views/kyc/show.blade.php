@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')<div class="mx-auto max-w-3xl px-4 py-14">
+@extends('layouts.dashboard') @section('title','Verification') @section('content')<div class="mx-auto max-w-3xl px-4 py-14">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Student verification</p>
