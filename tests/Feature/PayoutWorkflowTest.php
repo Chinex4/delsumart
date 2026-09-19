@@ -6,10 +6,10 @@ use App\Models\PayoutRequest;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Routing\Middleware\ThrottleRequests;
 use Tests\TestCase;
 
 class PayoutWorkflowTest extends TestCase
