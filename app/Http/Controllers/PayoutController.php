@@ -83,10 +83,14 @@ class PayoutController extends Controller
         $data = $request->validate(['account_number' => ['required', 'digits:10'], 'bank_code' => 'required|string|max:20']);
 
         try {
-            return response()->json(['data' => $paystack->resolveAccount($data['account_number'], $data['bank_code'])]);
+            $resolved = $paystack->resolveAccount($data['account_number'], $data['bank_code']);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            $error = $e->getMessage();
+
+            return response()->json(['message' => $error], 422);
         }
+
+        return response()->json(['data' => $resolved]);
     }
 
     public function storeBank(Request $request, PaystackService $paystack)
