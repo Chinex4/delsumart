@@ -119,6 +119,7 @@ class PayoutController extends Controller
             $totalSales = (float) Transaction::where('seller_id', $user->id)->where('status', 'released')->lockForUpdate()->sum('amount');
             $reserved = (float) PayoutRequest::where('user_id', $user->id)->whereIn('status', ['pending', 'processing', 'paid'])->lockForUpdate()->sum('amount');
             $amount = (float) $data['amount'];
+
             if ($amount > max(0, $totalSales - $reserved)) {
                 throw ValidationException::withMessages(['amount' => 'This amount is higher than your available payout balance.']);
             }
