@@ -36,6 +36,7 @@ class PayoutController extends Controller
     {
         $key = 'payout-bank-otp:'.$request->user()->id;
         $existing = Cache::get($key);
+
         if ($existing && $existing['sent_at'] > now()->subMinute()->timestamp) {
             throw ValidationException::withMessages(['otp' => 'Please wait before requesting another code.']);
         }
