@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-7xl px-4 py-10">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
