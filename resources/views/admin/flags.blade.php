@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-6xl px-4 py-12">
         <h1 class="text-3xl font-black text-blue-950">Fraud review</h1>
         <p class="mt-2 text-slate-600">Scores are rule-based and each flag explains the signals that triggered review.</p>
