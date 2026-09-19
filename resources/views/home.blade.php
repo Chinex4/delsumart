@@ -1,49 +1,9 @@
-@extends('layouts.app') @section('content')
-    <section class="overflow-hidden bg-white">
-        <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
-            <div>
-                <div
-                    class="mb-5 inline-flex items-center gap-2 border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-900">
-                    For verified DELSU students</div>
-                <h1 class="max-w-2xl text-4xl font-black leading-tight tracking-tight text-blue-950 sm:text-6xl">Buy and sell
-                    safely within DELSU.</h1>
-                <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">A student marketplace built around identity
-                    verification, two-step login and protected payments — so campus trading starts with trust.</p>
-                <div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('listings.index') }}"
-                        class="rounded-lg bg-blue-950 px-6 py-3 font-bold text-white">Explore marketplace</a><a
-                        href="{{ route('register') }}"
-                        class="rounded-lg border border-slate-300 bg-white px-6 py-3 font-bold">Start selling</a></div>
-            </div>
-            <div class="border border-slate-200 bg-slate-50 p-6 sm:p-8">
-                <div class="mb-6 flex items-center justify-between"><span class="font-bold text-blue-950">Trust at every
-                        step</span><span class="text-xs font-semibold text-slate-500">{{ number_format($listingCount) }}
-                        active listings</span></div>
-                <div class="space-y-3">
-                    @foreach ([['01', 'Verify your student identity', 'Student ID and current fee receipt are reviewed by an administrator.'], ['02', 'Sign in with two factors', 'Password plus a time-limited email security code protects your account.'], ['03', 'Pay through a protected flow', 'Payments are verified server-side before a transaction is marked protected.']] as $step)
-                        <div class="flex gap-4 border-t border-slate-200 py-5"><span
-                                class="font-mono text-sm text-blue-700">{{ $step[0] }}</span>
-                            <div>
-                                <h3 class="font-bold">{{ $step[1] }}</h3>
-                                <p class="mt-1 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="security" class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <div class="max-w-2xl">
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Security by design</p>
-            <h2 class="mt-3 text-3xl font-black text-blue-950">Not another anonymous campus classifieds page.</h2>
-        </div>
-        <div class="mt-10 grid gap-px overflow-hidden border bg-slate-200 md:grid-cols-3">
-            @foreach ([['Verified identity', 'Only administrator-verified student accounts can publish or purchase.'], ['Fraud monitoring', 'Rule-based risk scoring surfaces suspicious behaviour for review.'], ['Dispute controls', 'Disputed transactions pause normal release while an administrator reviews the case.']] as $x)
-                <div class="bg-white p-7">
-                    <h3 class="font-bold text-blue-950">{{ $x[0] }}</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $x[1] }}</p>
-                </div>
-            @endforeach
-        </div>
-    </section>
+@extends('layouts.app')
+@section('content')
+<section class="relative overflow-hidden bg-[#07152f] text-white"><div class="absolute inset-0 opacity-30" style="background:radial-gradient(circle at 75% 20%,#2563eb 0,transparent 35%),radial-gradient(circle at 15% 90%,#1d4ed8 0,transparent 30%)"></div><div class="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:py-28"><div><div class="inline-flex rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-blue-200">Built for the DELSU community</div><h1 class="mt-6 max-w-3xl text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">Campus deals, with <span class="text-blue-400">trust built in.</span></h1><p class="mt-6 max-w-xl text-lg leading-8 text-slate-300">Discover phones, laptops, books, fashion and everyday campus essentials from verified Delta State University students.</p><div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('listings.index') }}" class="rounded-xl bg-blue-500 px-6 py-3.5 font-bold text-white shadow-lg shadow-blue-950/30">Explore marketplace →</a><a href="{{ route('register') }}" class="rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-bold">Start selling</a></div><div class="mt-10 flex flex-wrap gap-6 text-sm text-slate-300"><span>✓ Student verification</span><span>✓ Two-step login</span><span>✓ Protected payments</span></div></div>
+<div class="relative"><div class="grid grid-cols-2 gap-4 rotate-1"><div class="space-y-4 pt-10"><img class="h-64 w-full rounded-3xl object-cover shadow-2xl" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80" alt="University students studying together"><div class="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur"><p class="text-3xl font-black">{{ number_format($listingCount) }}</p><p class="mt-1 text-sm text-slate-300">active marketplace listings</p></div></div><div class="space-y-4"><img class="h-80 w-full rounded-3xl object-cover shadow-2xl" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80" alt="Students using laptops together"><div class="rounded-2xl bg-blue-500 p-5"><p class="text-sm font-black">Verified students</p><p class="mt-1 text-xs text-blue-100">Trade inside a more accountable campus community.</p></div></div></div></div></div></section>
+<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">FRESH ON CAMPUS</p><h2 class="mt-2 text-3xl font-black sm:text-4xl">Latest listings</h2><p class="mt-2 text-slate-500">Real items currently available from DelsuMart sellers.</p></div><a href="{{ route('listings.index') }}" class="font-bold text-blue-600">View all listings →</a></div><div class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">@forelse($recent as $listing)<a href="{{ route('listings.show',$listing) }}" class="group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div class="aspect-[4/3] overflow-hidden bg-slate-100">@if($listing->images->first())<img class="h-full w-full object-cover transition duration-300 group-hover:scale-105" src="{{ asset('storage/'.$listing->images->first()->path) }}" alt="{{ $listing->title }}">@else<div class="grid h-full place-items-center bg-gradient-to-br from-blue-50 to-slate-100 text-sm font-bold text-slate-400">DelsuMart</div>@endif</div><div class="p-5"><p class="text-[11px] font-black uppercase tracking-wider text-blue-600">{{ $listing->category }}</p><h3 class="mt-1 line-clamp-1 font-black">{{ $listing->title }}</h3><p class="mt-3 text-xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>{{ $listing->seller->name }}</span>@if($listing->seller->isVerifiedStudent())<span class="font-bold text-emerald-600">✓ Verified</span>@endif</div></div></a>@empty<div class="col-span-full rounded-2xl border border-dashed p-12 text-center text-slate-500">No active listings yet.</div>@endforelse</div></section>
+<section class="bg-slate-100"><div class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">HOW IT WORKS</p><h2 class="mt-2 max-w-2xl text-3xl font-black sm:text-4xl">From student verification to a completed campus trade.</h2><div class="mt-10 grid gap-5 md:grid-cols-3">@foreach([['01','Verify your DELSU identity','Submit your student ID and current fee receipt for administrator review.'],['02','Discover or list an item','Browse real campus listings or publish your own once your account is verified.'],['03','Trade with protection','Payments are verified server-side and disputes pause normal completion for review.']] as $step)<div class="rounded-2xl border bg-white p-7"><span class="text-sm font-black text-blue-600">{{ $step[0] }}</span><h3 class="mt-5 text-xl font-black">{{ $step[1] }}</h3><p class="mt-3 text-sm leading-6 text-slate-500">{{ $step[2] }}</p></div>@endforeach</div></div></section>
+<section id="security" class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><div class="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">SECURITY BY DESIGN</p><h2 class="mt-2 text-3xl font-black sm:text-4xl">More accountable than anonymous campus classifieds.</h2><p class="mt-4 leading-7 text-slate-500">DelsuMart combines student identity review with account security, server-verified payments, fraud signals and dispute controls.</p></div><div class="grid gap-4 sm:grid-cols-2">@foreach([['Student KYC','Only approved, active students can trade.'],['Email OTP MFA','Every login adds a time-limited email security code.'],['Fraud monitoring','Explainable rules surface unusual behaviour for human review.'],['Dispute controls','Disputed transactions pause normal completion until review.']] as $item)<div class="rounded-2xl border bg-white p-6 shadow-sm"><div class="grid h-10 w-10 place-items-center rounded-xl bg-blue-100 font-black text-blue-700">✓</div><h3 class="mt-4 font-black">{{ $item[0] }}</h3><p class="mt-2 text-sm leading-6 text-slate-500">{{ $item[1] }}</p></div>@endforeach</div></div></section>
+<section class="mx-auto max-w-7xl px-4 pb-20 sm:px-6"><div class="overflow-hidden rounded-3xl bg-blue-600 p-8 text-white sm:p-12"><div class="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center"><div><h2 class="text-3xl font-black">Ready to trade within DELSU?</h2><p class="mt-2 text-blue-100">Create your student account, complete verification and join the marketplace.</p></div><a href="{{ route('register') }}" class="rounded-xl bg-white px-6 py-3 font-black text-blue-700">Create account →</a></div></div></section>
 @endsection
