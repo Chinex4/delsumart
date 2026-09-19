@@ -35,12 +35,19 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::post('/paystack/webhook', [PaymentController::class, 'webhook'])->middleware('throttle:120,1')->name('payments.webhook');
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'overview'])->name('dashboard');
+    Route::get('/account', [DashboardController::class, 'account'])->name('account');
+    Route::get('/account/listings', [DashboardController::class, 'listings'])->name('account.listings');
+    Route::get('/account/purchases', [DashboardController::class, 'purchases'])->name('account.purchases');
+    Route::get('/account/sales', [DashboardController::class, 'sales'])->name('account.sales');
+    Route::get('/account/transactions', [DashboardController::class, 'transactions'])->name('account.transactions');
+    Route::get('/account/disputes', [DashboardController::class, 'disputes'])->name('account.disputes');
     Route::get('/verification', [KycController::class, 'show'])->name('kyc.show');
     Route::post('/verification', [KycController::class, 'store'])->middleware('throttle:4,10')->name('kyc.store');
     Route::get('/verification/{verification}/documents/{type}', [KycDocumentController::class, 'show'])->name('kyc.documents.show');
     Route::get('/disputes/{dispute}/evidence', [PrivateEvidenceController::class, 'show'])->name('disputes.evidence');
     Route::middleware('verified.student')->group(function () {
+        Route::get('/account/listings/create', [ListingController::class, 'create'])->name('listings.create');
         Route::post('/listings', [ListingController::class, 'store'])->name('listings.store');
         Route::delete('/listings/{listing}', [ListingController::class, 'destroy'])->name('listings.destroy');
         Route::post('/checkout/{listing}', [PaymentController::class, 'initialize'])->middleware('throttle:5,1')->name('payments.initialize');
@@ -54,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/students/{student}', [AdminStudentController::class, 'show'])->name('students.show');
         Route::patch('/students/{student}/status', [AdminStudentController::class, 'status'])->name('students.status');
         Route::get('/verifications', [AdminController::class, 'verifications'])->name('verifications');
+        Route::get('/verifications/{verification}', [AdminController::class, 'verification'])->name('verifications.show');
         Route::patch('/verifications/{verification}', [AdminController::class, 'decide'])->name('verifications.decide');
         Route::get('/listings', [AdminMarketplaceController::class, 'listings'])->name('listings');
         Route::get('/transactions', [AdminMarketplaceController::class, 'transactions'])->name('transactions');
