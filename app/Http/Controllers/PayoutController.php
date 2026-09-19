@@ -36,7 +36,7 @@ class PayoutController extends Controller
     {
         $key = 'payout-bank-otp:'.$request->user()->id;
         $existing = Cache::get($key);
-        if ($existing && now()->timestamp - $existing['sent_at'] < 60) {
+        if ($existing && $existing['sent_at'] > now()->subMinute()->timestamp) {
             throw ValidationException::withMessages(['otp' => 'Please wait before requesting another code.']);
         }
 
@@ -53,9 +53,9 @@ class PayoutController extends Controller
         $key = 'payout-bank-otp:'.$request->user()->id;
         $record = Cache::get($key);
 
-        if (! $record || $record['attempts'] >= 5 || ! Hash::check($data['otp'], $record['hash'])) {
+        if ($record === null || $record['attempts'] >= 5 || Hash::check($data['otp'], $record['hash']) === false) {
             if ($record) {
-                $record['attempts']++;
+                $record['attempts'] = $record['attempts'] + 1;
                 Cache::put($key, $record, now()->addMinutes(10));
             }
             throw ValidationException::withMessages(['otp' => 'The code is invalid or expired.']);
