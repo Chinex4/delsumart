@@ -19,7 +19,7 @@
             @foreach ([
                 ['dashboard','Overview','⌂'], ['listings.index','Marketplace','⌕'], ['account.listings','My listings','▦'],
                 ['listings.create','Create listing','＋'], ['account.purchases','Purchases','↓'], ['account.sales','Sales','↑'],
-                ['account.transactions','Transactions','↔'], ['account.disputes','Disputes','!'], ['kyc.show','Verification','✓'],
+                ['account.transactions','Transactions','↔'], ['account.disputes','Disputes','!'], ['payouts.index','Payouts','₦'], ['kyc.show','Verification','✓'],
                 ['account','Account','○']
             ] as [$route,$label,$icon])
                 <a href="{{ route($route) }}" title="{{ $label }}" class="flex items-center gap-3 rounded-xl px-3 py-3 transition {{ request()->routeIs($route) ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">

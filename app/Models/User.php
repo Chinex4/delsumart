@@ -39,6 +39,16 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class, 'seller_id');
     }
 
+    public function bankAccount()
+    {
+        return $this->hasOne(BankAccount::class);
+    }
+
+    public function payoutRequests()
+    {
+        return $this->hasMany(PayoutRequest::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
