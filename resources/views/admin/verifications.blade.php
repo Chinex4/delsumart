@@ -1,40 +1,10 @@
-@extends('layouts.admin') @section('content')
-    <div class="mx-auto max-w-7xl px-4 py-12">
-        <h1 class="text-3xl font-black text-blue-950">KYC verification queue</h1>
-        <div class="mt-8 space-y-4">
-            @foreach ($verifications as $v)
-                <article class="border bg-white p-5">
-                    <div class="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                            <h2 class="font-bold">{{ $v->full_name }}</h2>
-                            <p class="text-sm text-slate-500">{{ $v->matric_no }} · {{ $v->user->email }} ·
-                                {{ $v->programme }} · {{ $v->level }}</p>
-                            <p class="mt-2 text-xs font-bold uppercase">{{ $v->verification_status }} · Resubmissions
-                                {{ $v->resubmission_count }}</p>
-                            <div class="mt-4 flex gap-2"><a target="_blank"
-                                    href="{{ route('kyc.documents.show', [$v, 'id-card']) }}"
-                                    class="border px-3 py-2 text-xs font-bold text-blue-800">View student ID</a><a
-                                    target="_blank" href="{{ route('kyc.documents.show', [$v, 'fee-receipt']) }}"
-                                    class="border px-3 py-2 text-xs font-bold text-blue-800">View fee receipt</a></div>
-                        </div>
-                        @if ($v->verification_status === 'pending')
-                            <div class="flex flex-col gap-2 sm:flex-row">
-                                <form method="POST" action="{{ route('admin.verifications.decide', $v) }}">@csrf
-                                    @method('PATCH')<input type="hidden" name="decision" value="verified"><button
-                                        class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white">Approve</button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.verifications.decide', $v) }}"
-                                    class="flex gap-2">@csrf @method('PATCH')<input type="hidden" name="decision"
-                                        value="rejected"><input name="reason" required placeholder="Rejection reason"
-                                        class="rounded-lg border px-3 text-sm"><button
-                                        class="rounded-lg bg-red-700 px-4 py-2 text-sm font-bold text-white">Reject</button>
-                                </form>
-                            </div>
-                        @endif
-                    </div>
-                </article>
-            @endforeach
-        </div>
-        <div class="mt-8">{{ $verifications->links() }}</div>
-    </div>
+@extends('layouts.admin')
+@section('title','KYC reviews')
+@section('content')
+<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">TRUST & SAFETY</p><h1 class="mt-2 text-3xl font-black">KYC verification queue</h1><p class="mt-2 text-slate-500">Inspect student details and private verification documents before deciding.</p></div></div>
+<div class="mt-8 grid gap-4">
+@forelse($verifications as $v)
+<article class="rounded-2xl border bg-white p-5 shadow-sm"><div class="flex flex-col gap-5 lg:flex-row lg:items-center"><div class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-blue-100 font-black text-blue-800">{{ strtoupper(substr($v->full_name,0,1)) }}</div><div class="min-w-0 flex-1"><div class="flex flex-wrap items-center gap-2"><h2 class="font-black">{{ $v->full_name }}</h2><span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $v->verification_status==='verified'?'bg-emerald-100 text-emerald-800':($v->verification_status==='rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-800') }}">{{ $v->verification_status }}</span></div><p class="mt-1 text-sm text-slate-500">{{ $v->matric_no }} · {{ $v->programme }} · {{ $v->level }}</p><p class="mt-1 text-xs text-slate-400">{{ $v->user->email }} · {{ $v->updated_at->format('d M Y, H:i') }} · {{ $v->resubmission_count }} resubmissions</p></div><a href="{{ route('admin.verifications.show',$v) }}" class="rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white">Review documents →</a></div></article>
+@empty<div class="rounded-2xl border border-dashed bg-white p-12 text-center text-slate-500">No verification submissions found.</div>@endforelse
+</div><div class="mt-8">{{ $verifications->links() }}</div>
 @endsection
