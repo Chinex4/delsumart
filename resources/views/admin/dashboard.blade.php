@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Administration</p>
         <h1 class="mt-2 text-3xl font-black text-blue-950">Trust & safety overview</h1>
