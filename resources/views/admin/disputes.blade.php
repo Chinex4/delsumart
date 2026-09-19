@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.admin') @section('content')
     <div class="mx-auto max-w-7xl px-4 py-12">
         <h1 class="text-3xl font-black text-blue-950">Transaction disputes</h1>
         <p class="mt-2 text-slate-600">Review participant claims before changing the protected transaction state.</p>
