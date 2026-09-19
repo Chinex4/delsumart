@@ -1,85 +1,17 @@
 @extends('layouts.admin')
-@section('title', 'Review student verification')
+@section('title','Review student verification')
 @section('content')
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <a href="{{ route('admin.verifications') }}">KYC reviews</a><x-icon name="chevron"
-            size="12" /><span>{{ $verification->full_name }}</span>
-    </nav>
-    <x-page-header :title="$verification->full_name" description="Review both documents and student details before recording a decision."
-        eyebrow="PRIVATE STUDENT VERIFICATION"><x-badge :status="$verification->verification_status" /></x-page-header>
-    <div class="detail-grid">
-        <div class="stack"><x-card title="Student information">
-                <dl class="detail-list">
-                    @foreach (['Full name' => $verification->full_name, 'Matric number' => $verification->matric_no, 'Email' => $verification->user->email, 'Programme' => $verification->programme, 'Level' => $verification->level, 'First submitted' => $verification->created_at->format('d M Y, H:i'), 'Last submission' => $verification->updated_at->format('d M Y, H:i'), 'Resubmissions' => $verification->resubmission_count] as $label => $value)
-                        <div>
-                            <dt>{{ $label }}</dt>
-                            <dd>{{ $value }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-                <a class="text-link mt-6" href="{{ route('admin.students.show', $verification->user) }}">View student
-                    profile <x-icon name="arrow" size="15" /></a>
-            </x-card>
-            <x-card title="Submitted identity documents"
-                description="Open an image for a larger preview, or view the original PDF securely.">
-                <div class="form-grid"><x-kyc-document :verification="$verification" type="id-card"
-                        label="Student ID card" /><x-kyc-document :verification="$verification" type="fee-receipt"
-                        label="Current school-fee receipt" /></div>
-            </x-card>
-            <x-card title="Review history">
-                @forelse($history as $log)
-                    <div class="py-4 border-b border-slate-100 last:border-0">
-                        <div class="flex justify-between gap-3"><strong
-                                class="text-xs">{{ ucfirst(str_replace('_', ' ', $log->action_type)) }}</strong><time
-                                class="field-hint">{{ $log->created_at->format('d M Y, H:i') }}</time></div>
-                        <p class="prose-copy mt-2">{{ $log->notes }}</p>
-                        <p class="field-hint">{{ $log->admin?->name ?? 'System' }}</p>
-                </div>@empty<p class="muted text-sm">No previous review decisions have been recorded.</p>
-                @endforelse
-            </x-card>
-        </div>
-        <aside class="stack content-start">
-            @if ($verification->rejection_reason)
-                <x-alert tone="danger" title="Previous rejection reason">{{ $verification->rejection_reason }}</x-alert>
-            @endif
-            <x-card title="Record your decision" description="All decisions are logged and the student is notified.">
-                @if ($verification->verification_status === 'pending')
-                    <div class="form-stack">
-                        <p class="muted text-xs">Check that the name and matric number match, both documents are readable,
-                            and the fee receipt is for the current session.</p>
-                        <form method="POST" action="{{ route('admin.verifications.decide', $verification) }}"
-                            data-confirm="approve-kyc">@csrf @method('PATCH')<input type="hidden" name="decision"
-                                value="verified"><x-button icon="check" class="w-full">Approve verification</x-button>
-                        </form><x-button variant="secondary" type="button" data-dialog="reject-kyc" class="w-full">Reject
-                            with a reason</x-button>
-                    </div>
-                    <x-modal id="approve-kyc" title="Approve this student's identity?">
-                        <p class="muted text-sm">Confirm you have reviewed both documents for
-                            {{ $verification->full_name }}. This approves student verification and unlocks trading for an
-                            active account.</p>
-                        <div class="modal-actions"><x-button type="button" variant="secondary" data-close-dialog>Back to
-                                review</x-button><x-button type="button" data-confirm-action>Approve student</x-button>
-                        </div>
-                    </x-modal>
-                    <x-modal id="reject-kyc" title="Explain what needs to change">
-                        <form method="POST" action="{{ route('admin.verifications.decide', $verification) }}"
-                            class="form-stack">@csrf @method('PATCH')<input type="hidden" name="decision"
-                                value="rejected">
-                            <p class="muted text-sm">The student will receive this reason so they can correct their
-                                documents and resubmit.</p><x-field name="reason" label="Rejection reason" type="textarea"
-                                maxlength="1000" required placeholder="Explain which document needs attention and why." />
-                            <div class="modal-actions"><x-button type="button" variant="secondary"
-                                    data-close-dialog>Cancel</x-button><x-button variant="danger">Confirm
-                                    rejection</x-button></div>
-                        </form>
-                    </x-modal>
-                @else<p class="muted text-sm">This submission has already been reviewed.</p>
-                    <p class="text-xs mt-4">
-                        {{ $verification->reviewer?->name }}<br>{{ $verification->verified_at?->format('d M Y, H:i') }}
-                    </p>
-                @endif
-            </x-card><x-alert title="Private by design">Files stay on private storage. Document access is checked on every
-                request.</x-alert>
-        </aside>
-    </div>
+<a href="{{ route('admin.verifications') }}" class="text-sm font-bold text-blue-600">← KYC reviews</a>
+<div class="mt-5 flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">PRIVATE STUDENT VERIFICATION</p><h1 class="mt-2 text-3xl font-black">{{ $verification->full_name }}</h1><p class="mt-2 text-slate-500">Review the student's information and both submitted documents before recording a decision.</p></div><span class="rounded-full px-3 py-1.5 text-xs font-black uppercase {{ $verification->verification_status==='verified'?'bg-emerald-100 text-emerald-800':($verification->verification_status==='rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-800') }}">{{ $verification->verification_status }}</span></div>
+<div class="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div class="space-y-6">
+<section class="rounded-2xl border bg-white p-6 shadow-sm"><h2 class="text-lg font-black">Student information</h2><dl class="mt-5 grid gap-5 sm:grid-cols-2">@foreach(['Full name'=>$verification->full_name,'Matric number'=>$verification->matric_no,'Email'=>$verification->user->email,'Programme'=>$verification->programme,'Level'=>$verification->level,'Last submitted'=>$verification->updated_at->format('d M Y, H:i'),'Resubmissions'=>$verification->resubmission_count] as $label=>$value)<div><dt class="text-xs font-bold uppercase text-slate-400">{{ $label }}</dt><dd class="mt-1 font-semibold">{{ $value }}</dd></div>@endforeach</dl></section>
+<section class="rounded-2xl border bg-white p-6 shadow-sm"><div><h2 class="text-lg font-black">Submitted documents</h2><p class="mt-1 text-sm text-slate-500">These URLs are authorized controller routes. Raw private storage paths are never exposed.</p></div><div class="mt-6 grid gap-5 md:grid-cols-2">
+@foreach([['id-card','Student ID card',$verification->id_card_image],['fee-receipt','Current school-fee receipt',$verification->fee_receipt_image]] as [$type,$label,$path])
+<div class="overflow-hidden rounded-2xl border bg-slate-50"><div class="listing-photo aspect-[4/3] bg-slate-100">@if(preg_match('/\.(jpe?g|png)$/i',$path))<img class="h-full w-full object-contain" src="{{ route('kyc.documents.show',[$verification,$type]) }}" alt="{{ $label }}">@else<div class="grid h-full place-items-center p-6 text-center"><div><div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-red-100 font-black text-red-700">PDF</div><p class="mt-3 text-sm font-bold">Secure PDF document</p></div></div>@endif</div><div class="flex items-center justify-between gap-3 border-t bg-white p-4"><strong class="text-sm">{{ $label }}</strong><a target="_blank" rel="noopener" class="text-sm font-bold text-blue-600" href="{{ route('kyc.documents.show',[$verification,$type]) }}">View PDF / document ↗</a></div></div>
+@endforeach
+</div></section>
+<section class="rounded-2xl border bg-white p-6 shadow-sm"><h2 class="text-lg font-black">Review history</h2><div class="mt-4 divide-y">@forelse($history as $log)<div class="py-4"><div class="flex justify-between gap-4"><strong class="text-sm">{{ ucfirst(str_replace('_',' ',$log->action_type)) }}</strong><time class="text-xs text-slate-400">{{ $log->created_at->format('d M Y, H:i') }}</time></div><p class="mt-2 text-sm text-slate-600">{{ $log->notes }}</p><p class="mt-1 text-xs text-slate-400">{{ $log->admin?->name ?? 'System' }}</p></div>@empty<p class="py-4 text-sm text-slate-500">No previous review decisions.</p>@endforelse</div></section>
+</div><aside class="space-y-5">@if($verification->rejection_reason)<div class="rounded-2xl border border-red-200 bg-red-50 p-5"><p class="font-black text-red-900">Previous rejection reason</p><p class="mt-2 text-sm text-red-800">{{ $verification->rejection_reason }}</p></div>@endif
+<section class="rounded-2xl border bg-white p-6 shadow-sm"><h2 class="font-black">Record decision</h2><p class="mt-2 text-sm leading-6 text-slate-500">Confirm the identity details and readability of both documents. Decisions are audited.</p>@if($verification->verification_status==='pending')<form method="POST" action="{{ route('admin.verifications.decide',$verification) }}" class="mt-5">@csrf @method('PATCH')<input type="hidden" name="decision" value="verified"><button class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white">Approve verification</button></form><form method="POST" action="{{ route('admin.verifications.decide',$verification) }}" class="mt-4 space-y-3">@csrf @method('PATCH')<input type="hidden" name="decision" value="rejected"><label class="text-sm font-bold" for="reason">Rejection reason</label><textarea id="reason" name="reason" required maxlength="1000" rows="4" class="w-full rounded-xl border px-3 py-3" placeholder="Tell the student exactly what needs to be corrected."></textarea><button class="w-full rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-700">Reject submission</button></form>@else<p class="mt-5 rounded-xl bg-slate-50 p-4 text-sm">Reviewed by {{ $verification->reviewer?->name ?? 'Administrator' }} on {{ $verification->verified_at?->format('d M Y, H:i') }}.</p>@endif</section>
+<div class="rounded-2xl bg-slate-950 p-5 text-sm leading-6 text-slate-300"><strong class="text-white">Private by design.</strong><br>Documents remain in private storage and access is authorized on every request.</div></aside></div>
 @endsection
