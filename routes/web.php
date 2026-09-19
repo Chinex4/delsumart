@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDisputeController;
 use App\Http\Controllers\AdminMarketplaceController;
+use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\AdminStudentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\KycDocumentController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PrivateEvidenceController;
 use App\Http\Controllers\TransactionController;
 use App\Models\Listing;
@@ -42,6 +44,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/sales', [DashboardController::class, 'sales'])->name('account.sales');
     Route::get('/account/transactions', [DashboardController::class, 'transactions'])->name('account.transactions');
     Route::get('/account/disputes', [DashboardController::class, 'disputes'])->name('account.disputes');
+    Route::get('/account/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+    Route::post('/account/payouts/bank/otp', [PayoutController::class, 'requestBankOtp'])->middleware('throttle:3,5')->name('payouts.bank.otp');
+    Route::post('/account/payouts/bank/otp/verify', [PayoutController::class, 'verifyBankOtp'])->middleware('throttle:8,5')->name('payouts.bank.otp.verify');
+    Route::get('/account/payouts/banks', [PayoutController::class, 'banks'])->middleware('throttle:30,1')->name('payouts.banks');
+    Route::post('/account/payouts/bank/resolve', [PayoutController::class, 'resolveBank'])->middleware('throttle:20,1')->name('payouts.bank.resolve');
+    Route::post('/account/payouts/bank', [PayoutController::class, 'storeBank'])->middleware('throttle:5,5')->name('payouts.bank.store');
+    Route::post('/account/payouts', [PayoutController::class, 'store'])->middleware(['verified.student','throttle:5,10'])->name('payouts.store');
     Route::get('/verification', [KycController::class, 'show'])->name('kyc.show');
     Route::post('/verification', [KycController::class, 'store'])->middleware('throttle:4,10')->name('kyc.store');
     Route::get('/verification/{verification}/documents/{type}', [KycDocumentController::class, 'show'])->name('kyc.documents.show');
@@ -65,6 +74,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('/verifications/{verification}', [AdminController::class, 'decide'])->name('verifications.decide');
         Route::get('/listings', [AdminMarketplaceController::class, 'listings'])->name('listings');
         Route::get('/transactions', [AdminMarketplaceController::class, 'transactions'])->name('transactions');
+        Route::get('/payouts', [AdminPayoutController::class, 'index'])->name('payouts');
+        Route::patch('/payouts/{payout}', [AdminPayoutController::class, 'update'])->name('payouts.update');
         Route::get('/disputes', [AdminDisputeController::class, 'index'])->name('disputes');
         Route::patch('/disputes/{dispute}', [AdminDisputeController::class, 'resolve'])->name('disputes.resolve');
         Route::get('/fraud-flags', [AdminController::class, 'flags'])->name('flags');
