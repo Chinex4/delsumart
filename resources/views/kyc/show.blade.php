@@ -2,7 +2,7 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Student verification</p>
-                <h1 class="mt-2 text-3xl font-black text-blue-950">Confirm your DELSU identity</h1>
+                <h1 class="mt-2 text-3xl font-black text-blue-950">Confirm your DELSU identity</h1><p class="mt-2 text-sm text-slate-500">Upload your documents securely for administrator review.</p>
             </div>
             @if ($verification)
                 <span
