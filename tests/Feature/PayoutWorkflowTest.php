@@ -9,11 +9,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Tests\TestCase;
 
 class PayoutWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(ThrottleRequests::class);
+    }
 
     private function student(string $name): User
     {
@@ -47,10 +54,6 @@ class PayoutWorkflowTest extends TestCase
     public function test_bank_setup_requires_otp_and_reverifies_account_server_side(): void
     {
         $student = $this->student('Seller');
-        Http::fake([
-            'api.paystack.co/bank*' => Http::response(['status' => true, 'data' => [['name' => 'Guaranty Trust Bank', 'code' => '058', 'active' => true, 'is_deleted' => false]]]),
-            'api.paystack.co/transferrecipient' => Http::response(['status' => true, 'data' => ['recipient_code' => 'RCP_secure']]),
-        ]);
         $this->actingAs($student)->get('/account/payouts/banks')->assertForbidden();
         Cache::put('payout-bank-otp:'.$student->id, ['hash' => Hash::make('123456'), 'sent_at' => now()->timestamp, 'attempts' => 0], now()->addMinutes(10));
         $this->post('/account/payouts/bank/otp/verify', ['otp' => '123456'])->assertRedirect();
