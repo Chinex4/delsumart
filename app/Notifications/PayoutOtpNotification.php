@@ -10,9 +10,7 @@ class PayoutOtpNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(public string $code)
-    {
-    }
+    public function __construct(public string $code) {}
 
     public function via(object $notifiable): array
     {
