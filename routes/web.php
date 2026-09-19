@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/payouts/banks', [PayoutController::class, 'banks'])->middleware('throttle:30,1')->name('payouts.banks');
     Route::post('/account/payouts/bank/resolve', [PayoutController::class, 'resolveBank'])->middleware('throttle:20,1')->name('payouts.bank.resolve');
     Route::post('/account/payouts/bank', [PayoutController::class, 'storeBank'])->middleware('throttle:5,5')->name('payouts.bank.store');
-    Route::post('/account/payouts', [PayoutController::class, 'store'])->middleware(['verified.student','throttle:5,10'])->name('payouts.store');
+    Route::post('/account/payouts', [PayoutController::class, 'store'])->middleware(['verified.student', 'throttle:5,10'])->name('payouts.store');
     Route::get('/verification', [KycController::class, 'show'])->name('kyc.show');
     Route::post('/verification', [KycController::class, 'store'])->middleware('throttle:4,10')->name('kyc.store');
     Route::get('/verification/{verification}/documents/{type}', [KycDocumentController::class, 'show'])->name('kyc.documents.show');
