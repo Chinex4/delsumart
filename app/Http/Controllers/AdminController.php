@@ -26,6 +26,19 @@ class AdminController extends Controller
         return view('admin.verifications', ['verifications' => Verification::with('user')->latest()->paginate(20)]);
     }
 
+    public function verification(Verification $verification)
+    {
+        $verification->load(['user', 'reviewer']);
+
+        $history = AuditLog::with('admin')
+            ->where('target_type', 'verification')
+            ->where('target_id', $verification->id)
+            ->latest()
+            ->get();
+
+        return view('admin.verifications.show', compact('verification', 'history'));
+    }
+
     public function decide(Request $r, Verification $verification, FraudScoringService $fraud)
     {
         $d = $r->validate(['decision' => 'required|in:verified,rejected', 'reason' => 'nullable|required_if:decision,rejected|string|max:1000']);
