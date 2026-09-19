@@ -78,6 +78,7 @@ class PayoutController extends Controller
     public function resolveBank(Request $request, PaystackService $paystack)
     {
         abort_unless($this->bankSessionValid($request), 403);
+
         $data = $request->validate(['account_number' => ['required', 'digits:10'], 'bank_code' => 'required|string|max:20']);
 
         try {
@@ -113,6 +114,7 @@ class PayoutController extends Controller
     {
         $data = $request->validate(['amount' => 'required|numeric|min:5000|max:200000']);
         $user = $request->user();
+
         abort_unless($user->bankAccount, 422, 'Add a verified bank account before requesting a payout.');
 
         DB::transaction(function () use ($user, $data) {
