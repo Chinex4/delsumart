@@ -58,6 +58,7 @@ class PayoutController extends Controller
                 $record['attempts'] = $record['attempts'] + 1;
                 Cache::put($key, $record, now()->addMinutes(10));
             }
+
             throw ValidationException::withMessages(['otp' => 'The code is invalid or expired.']);
         }
 
