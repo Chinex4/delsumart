@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuditLog;
 use App\Models\PayoutRequest;
 use App\Models\Transaction;
 use App\Notifications\PayoutOtpNotification;
@@ -21,7 +20,7 @@ class PayoutController extends Controller
     {
         $user = $request->user();
         $totalSales = (float) $user->sales()->where('status', 'released')->sum('amount');
-        $reserved = (float) $user->payoutRequests()->whereIn('status', ['pending','processing','paid'])->sum('amount');
+        $reserved = (float) $user->payoutRequests()->whereIn('status', ['pending', 'processing', 'paid'])->sum('amount');
         $available = max(0, $totalSales - $reserved);
 
         return view('account.payouts', [
@@ -78,7 +77,7 @@ class PayoutController extends Controller
     public function resolveBank(Request $request, PaystackService $paystack)
     {
         abort_unless($this->bankSessionValid($request), 403);
-        $data = $request->validate(['account_number' => ['required','digits:10'], 'bank_code' => 'required|string|max:20']);
+        $data = $request->validate(['account_number' => ['required', 'digits:10'], 'bank_code' => 'required|string|max:20']);
 
         try {
             return response()->json(['data' => $paystack->resolveAccount($data['account_number'], $data['bank_code'])]);
@@ -90,7 +89,7 @@ class PayoutController extends Controller
     public function storeBank(Request $request, PaystackService $paystack)
     {
         abort_unless($this->bankSessionValid($request), 403);
-        $data = $request->validate(['account_number' => ['required','digits:10'], 'bank_code' => 'required|string|max:20', 'bank_name' => 'required|string|max:120']);
+        $data = $request->validate(['account_number' => ['required', 'digits:10'], 'bank_code' => 'required|string|max:20', 'bank_name' => 'required|string|max:120']);
 
         try {
             $resolved = $paystack->resolveAccount($data['account_number'], $data['bank_code']);
@@ -117,7 +116,7 @@ class PayoutController extends Controller
 
         DB::transaction(function () use ($user, $data) {
             $totalSales = (float) Transaction::where('seller_id', $user->id)->where('status', 'released')->lockForUpdate()->sum('amount');
-            $reserved = (float) PayoutRequest::where('user_id', $user->id)->whereIn('status', ['pending','processing','paid'])->lockForUpdate()->sum('amount');
+            $reserved = (float) PayoutRequest::where('user_id', $user->id)->whereIn('status', ['pending', 'processing', 'paid'])->lockForUpdate()->sum('amount');
             $amount = (float) $data['amount'];
             if ($amount > max(0, $totalSales - $reserved)) {
                 throw ValidationException::withMessages(['amount' => 'This amount is higher than your available payout balance.']);
