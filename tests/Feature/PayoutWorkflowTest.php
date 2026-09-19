@@ -24,7 +24,7 @@ class PayoutWorkflowTest extends TestCase
 
     private function student(string $name): User
     {
-        $user = User::create(['name' => $name, 'matric_no' => 'DELSU/'.$name, 'email' => strtolower($name).'@test.local', 'programme' => 'Computer Science', 'level' => '300', 'password' => 'Password123!']);
+        $user = User::create(['name' => $name, 'matric_no' => 'DELSU/'.$name, 'email' => strtolower($name).'@test.local', 'programme' => 'Computer Science', 'level' => '300', 'password' => 'Password123!', 'account_status' => 'active']);
         $user->verification()->create(['matric_no' => $user->matric_no, 'full_name' => $name, 'programme' => $user->programme, 'level' => $user->level, 'id_card_image' => 'id', 'fee_receipt_image' => 'receipt', 'verification_status' => 'verified']);
 
         return $user;
@@ -38,7 +38,7 @@ class PayoutWorkflowTest extends TestCase
         Transaction::create(['listing_id' => $listing->id, 'buyer_id' => $buyer->id, 'seller_id' => $seller->id, 'amount' => 10000, 'status' => 'released', 'paystack_reference' => 'TX-1']);
         $bank = $seller->bankAccount()->create(['bank_code' => '058', 'bank_name' => 'GTBank', 'account_number' => '0123456789', 'account_name' => 'Seller Test', 'paystack_recipient_code' => 'RCP_test', 'verified_at' => now()]);
         $this->actingAs($seller)->post('/account/payouts', ['amount' => 5000])->assertRedirect();
-        $this->actingAs($seller)->post('/account/payouts', ['amount' => 6000])->assertRedirect('/verification');
+        $this->actingAs($seller)->post('/account/payouts', ['amount' => 6000])->assertSessionHasErrors('amount');
         $this->assertDatabaseHas('payout_requests', ['user_id' => $seller->id, 'bank_account_id' => $bank->id, 'amount' => 5000, 'status' => 'pending']);
     }
 
