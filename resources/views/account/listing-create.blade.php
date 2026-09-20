@@ -1,13 +1,63 @@
-@extends('layouts.dashboard')
-@section('title','Create listing')
+@extends('layouts.student')
+@section('title', 'Create a listing')
 @section('content')
-<div class="mx-auto max-w-3xl"><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">NEW LISTING</p><h1 class="mt-2 text-3xl font-black">Sell something on campus</h1><p class="mt-2 text-slate-500">Add clear details and photos so buyers know exactly what you are offering.</p>
-<form method="POST" enctype="multipart/form-data" action="{{ route('listings.store') }}" class="mt-8 space-y-6 rounded-2xl border bg-white p-6 shadow-sm sm:p-8">@csrf
-<div><label class="text-sm font-bold" for="title">Listing title</label><input id="title" name="title" value="{{ old('title') }}" required maxlength="120" class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="e.g. HP EliteBook 840 G5"></div>
-<div class="grid gap-5 sm:grid-cols-2"><div><label class="text-sm font-bold" for="category">Category</label><select id="category" name="category" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3">@foreach(['Phones & Tablets','Laptops & Computers','Books & Study','Fashion','Hostel & Home','Accessories','Other'] as $category)<option>{{ $category }}</option>@endforeach</select></div><div><label class="text-sm font-bold" for="price">Price (₦)</label><input id="price" type="number" name="price" min="100" max="10000000" value="{{ old('price') }}" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"></div></div>
-<div><label class="text-sm font-bold" for="description">Description</label><textarea id="description" name="description" rows="6" maxlength="3000" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Condition, specifications, what's included, and anything a buyer should know.">{{ old('description') }}</textarea></div>
-<div><label class="text-sm font-bold" for="images">Product photos</label><p class="mt-1 text-xs text-slate-500">Up to 5 images, maximum 4 MB each.</p><input id="images" type="file" name="images[]" multiple accept="image/*" class="mt-3 w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5"></div>
-@if($errors->any())<div class="rounded-xl bg-red-50 p-4 text-sm text-red-800"><ul class="list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
-<button class="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white">Publish listing</button>
-</form></div>
+    <x-page-header title="Someone on campus needs this."
+        description="A clear description and good photos help your item find its next home." eyebrow="CREATE A LISTING" />
+    <div class="detail-grid">
+        <form method="POST" action="{{ route('listings.store') }}" enctype="multipart/form-data" class="stack">
+            @csrf
+            <x-card title="01 · The essentials" description="Tell your campus what you're selling.">
+                <div class="form-stack">
+                    <x-field name="title" label="Listing title" placeholder="e.g. HP EliteBook 840 G7, 8 GB RAM"
+                        maxlength="120" required />
+                    <div class="form-grid">
+                        <x-field name="category" label="Category" type="select" required>
+                            <option value="">Choose a category</option>
+                            @foreach (config('marketplace.categories') as $category => $icon)
+                                <option value="{{ $category }}" @selected(old('category') === $category)>{{ $category }}
+                                </option>
+                            @endforeach
+                        </x-field>
+                        <x-field name="price" label="Price (₦)" type="number" min="100" max="10000000"
+                            step="0.01" placeholder="0.00" hint="Between ₦100 and ₦10,000,000." required />
+                    </div>
+                    <x-field name="description" label="About your item" type="textarea" rows="6" maxlength="3000"
+                        hint="Describe its condition, useful features, and any defects honestly." required />
+                </div>
+            </x-card>
+            <x-card title="02 · Add your photos" description="Let students see exactly what they're getting.">
+                <div class="form-stack">
+                    <x-field name="images[]" label="Product images" type="file" accept="image/*" multiple
+                        data-image-upload="listing-previews"
+                        hint="Up to 5 images, maximum 4 MB each. Use photos of the actual item." />
+                    <div id="listing-previews" class="upload-preview" aria-live="polite">
+                    </div>
+                </div>
+            </x-card>
+            <div class="flex flex-wrap gap-3">
+                <x-button icon="plus">Publish listing</x-button>
+                <x-button :href="route('account.listings')" variant="secondary">Cancel</x-button>
+            </div>
+        </form>
+        <aside class="stack content-start">
+            <x-card title="A listing that stands out">
+                <ul class="space-y-5 text-xs muted">
+                    <li>
+                        <strong class="block text-navy mb-1">Make the title specific</strong>Include the brand, model or
+                        book title.
+                    </li>
+                    <li>
+                        <strong class="block text-navy mb-1">Be honest about condition</strong>Great transactions start with
+                        clear expectations.
+                    </li>
+                    <li>
+                        <strong class="block text-navy mb-1">Use bright, clear photos</strong>A few angles help buyers make
+                        an informed choice.
+                    </li>
+                </ul>
+            </x-card>
+            <x-alert title="Keep it on DelsuMart">Use the protected payment flow and keep transaction records in
+                your workspace.</x-alert>
+        </aside>
+    </div>
 @endsection

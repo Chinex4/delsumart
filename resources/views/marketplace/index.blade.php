@@ -1,7 +1,65 @@
 @extends('layouts.app')
+@section('title', 'Explore the marketplace')
 @section('content')
-<div class="border-b bg-white"><div class="mx-auto max-w-7xl px-4 py-12 sm:px-6"><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">DELSU MARKETPLACE</p><h1 class="mt-2 text-4xl font-black sm:text-5xl">Find your next campus essential.</h1><p class="mt-3 max-w-2xl text-slate-500">Browse active listings from verified DELSU students and filter by what matters to you.</p></div></div>
-<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6"><form class="rounded-2xl border bg-white p-4 shadow-sm"><div class="grid gap-3 lg:grid-cols-[1fr_200px_140px_140px_180px_auto]"><input name="q" value="{{ request('q') }}" placeholder="Search listings..." class="rounded-xl border border-slate-300 px-4 py-3"><select name="category" class="rounded-xl border border-slate-300 px-3 py-3"><option value="">All categories</option>@foreach(['Phones & Tablets','Laptops & Computers','Books & Study','Fashion','Hostel & Home','Accessories','Other'] as $category)<option value="{{ $category }}" @selected(request('category')===$category)>{{ $category }}</option>@endforeach</select><input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Min ₦" class="rounded-xl border border-slate-300 px-3 py-3"><input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max ₦" class="rounded-xl border border-slate-300 px-3 py-3"><select name="sort" class="rounded-xl border border-slate-300 px-3 py-3"><option value="">Newest first</option><option value="price_asc" @selected(request('sort')==='price_asc')>Price: low to high</option><option value="price_desc" @selected(request('sort')==='price_desc')>Price: high to low</option><option value="oldest" @selected(request('sort')==='oldest')>Oldest first</option></select><button class="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Apply</button></div>@if(request()->hasAny(['q','category','min_price','max_price','sort']))<a href="{{ route('listings.index') }}" class="mt-3 inline-block text-xs font-bold text-blue-600">Reset filters</a>@endif</form>
-<div class="mt-8 flex items-center justify-between"><p class="text-sm text-slate-500"><strong class="text-slate-900">{{ $listings->total() }}</strong> active listings</p></div>
-<div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">@forelse($listings as $listing)<a href="{{ route('listings.show',$listing) }}" class="group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div class="aspect-[4/3] overflow-hidden bg-slate-100">@if($listing->images->first())<img src="{{ asset('storage/'.$listing->images->first()->path) }}" alt="{{ $listing->title }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">@else<div class="grid h-full place-items-center bg-gradient-to-br from-blue-50 to-slate-100 text-sm font-bold text-slate-400">No product photo</div>@endif</div><div class="p-5"><p class="text-[11px] font-black uppercase tracking-wider text-blue-600">{{ $listing->category }}</p><h2 class="mt-1 line-clamp-1 font-black">{{ $listing->title }}</h2><p class="mt-3 text-xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>{{ $listing->seller->name }}</span>@if($listing->seller->isVerifiedStudent())<span class="font-bold text-emerald-600">✓ Verified</span>@endif</div></div></a>@empty<div class="col-span-full rounded-2xl border border-dashed bg-white p-14 text-center"><h2 class="font-black">No finds this time</h2><p class="mt-2 text-sm text-slate-500">Try clearing a filter or searching for something broader.</p></div>@endforelse</div><div class="mt-10">{{ $listings->links() }}</div></div>
+    <div class="container section">
+        <x-page-header title="Find your next campus essential."
+            description="Good finds from your student community. A little closer to home." eyebrow="THE DELSU MARKETPLACE">
+            <x-button :href="route('listings.create')" icon="plus">Sell an item</x-button>
+        </x-page-header>
+        <form action="{{ route('listings.index') }}" method="GET" class="search-box">
+            <label for="market-search" class="sr-only">Search marketplace</label>
+            <input id="market-search" name="q" value="{{ request('q') }}"
+                placeholder="Search laptops, phones, books and more…">
+            @foreach (['category', 'min_price', 'max_price', 'sort'] as $filter)
+                <input type="hidden" name="{{ $filter }}" value="{{ request($filter) }}">
+            @endforeach
+            <x-button icon="search">
+                Search</x-button>
+        </form>
+        <div class="market-layout">
+            <aside class="market-filters">
+                <h2>Refine your search</h2>@include('partials.market-filters', ['suffix' => 'desktop'])
+            </aside>
+            <div>
+                <div class="market-toolbar">
+                    <p>
+                        <strong class="text-navy">{{ number_format($listings->total()) }}</strong>
+                        {{ Str::plural('result', $listings->total()) }}{{ request('q') ? ' for “' . request('q') . '”' : ' around campus' }}
+                    </p>
+                    <button class="btn btn-secondary mobile-toggle" type="button" data-dialog="market-filters">
+                        <x-icon name="filter" size="16" /> Filters</button>
+                    <form class="flex items-center gap-2" action="{{ route('listings.index') }}">
+                        @foreach (['q', 'category', 'min_price', 'max_price'] as $filter)
+                            <input type="hidden" name="{{ $filter }}" value="{{ request($filter) }}">
+                        @endforeach
+                        <label class="sr-only" for="sort">
+                            Sort listings</label>
+                        <select class="input" id="sort" name="sort">
+                            @foreach (config('ui.sort_options') as $value => $label)
+                                <option value="{{ $value }}" @selected(request('sort', 'latest') === $value)>{{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button class="icon-button" aria-label="Apply sort">
+                            <x-icon name="arrow" size="16" />
+                        </button>
+                    </form>
+                </div>
+                <div class="listing-grid">
+                    @forelse($listings as $listing)
+                        <x-listing-card :listing="$listing" />
+                    @empty
+                        <x-empty title="No finds this time"
+                            description="Try another search or clear a few filters. New campus finds could appear soon."
+                            icon="search">
+                            <x-button :href="route('listings.index')" variant="secondary">Clear
+                                filters</x-button>
+                        </x-empty>
+                    @endforelse
+                </div>
+                <div class="pagination">{{ $listings->links() }}</div>
+            </div>
+        </div>
+    </div>
+    <x-modal id="market-filters" title="Filter marketplace">@include('partials.market-filters', ['suffix' => 'mobile'])</x-modal>
 @endsection
