@@ -17,6 +17,15 @@ class DisputeOpenedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->subject('DelsuMart dispute opened')->line('A dispute has been opened for transaction #'.$this->dispute->transaction_id.'.')->line('Protected release is paused while the dispute is reviewed.');
+        return (new MailMessage)
+            ->subject('DelsuMart dispute opened')
+            ->line(
+                'A dispute has been opened for transaction #'.
+                    $this->dispute->transaction_id.
+                    '.',
+            )
+            ->line(
+                'Protected release is paused while the dispute is reviewed.',
+            );
     }
 }

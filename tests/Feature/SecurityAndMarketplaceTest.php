@@ -14,9 +14,25 @@ class SecurityAndMarketplaceTest extends TestCase
 
     private function student(bool $verified = false): User
     {
-        $u = User::create(['name' => 'Test Student', 'matric_no' => 'CSC/TEST/001', 'email' => 'student@example.test', 'programme' => 'Computer Science', 'level' => '400', 'password' => Hash::make('SecurePass123!'), 'account_status' => 'active']);
+        $u = User::create([
+            'name' => 'Test Student',
+            'matric_no' => 'CSC/TEST/001',
+            'email' => 'student@example.test',
+            'programme' => 'Computer Science',
+            'level' => '400',
+            'password' => Hash::make('SecurePass123!'),
+            'account_status' => 'active',
+        ]);
         if ($verified) {
-            $u->verification()->create(['matric_no' => $u->matric_no, 'full_name' => $u->name, 'programme' => $u->programme, 'level' => $u->level, 'id_card_image' => 'private/id', 'fee_receipt_image' => 'private/fee', 'verification_status' => 'verified']);
+            $u->verification()->create([
+                'matric_no' => $u->matric_no,
+                'full_name' => $u->name,
+                'programme' => $u->programme,
+                'level' => $u->level,
+                'id_card_image' => 'private/id',
+                'fee_receipt_image' => 'private/fee',
+                'verification_status' => 'verified',
+            ]);
         }
 
         return $u;
@@ -25,7 +41,14 @@ class SecurityAndMarketplaceTest extends TestCase
     public function test_pending_student_cannot_create_listing(): void
     {
         $u = $this->student();
-        $this->actingAs($u)->post('/listings', ['title' => 'Phone', 'description' => 'Good phone', 'category' => 'Phones & Electronics', 'price' => 100000])->assertRedirect('/verification');
+        $this->actingAs($u)
+            ->post('/listings', [
+                'title' => 'Phone',
+                'description' => 'Good phone',
+                'category' => 'Phones & Electronics',
+                'price' => 100000,
+            ])
+            ->assertRedirect('/verification');
         $this->assertDatabaseCount('listings', 0);
     }
 
@@ -33,16 +56,35 @@ class SecurityAndMarketplaceTest extends TestCase
     {
         $u = $this->student(true);
         $this->assertTrue($u->fresh()->isVerifiedStudent());
-        $this->actingAs($u)->post('/listings', ['title' => 'Phone', 'description' => 'Good phone', 'category' => 'Phones & Electronics', 'price' => 100000])->assertRedirect();
-        $this->assertDatabaseHas('listings', ['title' => 'Phone', 'user_id' => $u->id]);
+        $this->actingAs($u)
+            ->post('/listings', [
+                'title' => 'Phone',
+                'description' => 'Good phone',
+                'category' => 'Phones & Electronics',
+                'price' => 100000,
+            ])
+            ->assertRedirect();
+        $this->assertDatabaseHas('listings', [
+            'title' => 'Phone',
+            'user_id' => $u->id,
+        ]);
     }
 
     public function test_student_cannot_purchase_own_listing(): void
     {
         $u = $this->student(true);
         $this->assertTrue($u->fresh()->isVerifiedStudent());
-        $l = Listing::create(['user_id' => $u->id, 'title' => 'Laptop', 'description' => 'Test', 'category' => 'Laptops & Computers', 'price' => 250000, 'status' => 'active']);
-        $this->actingAs($u)->post('/checkout/'.$l->id)->assertStatus(422);
+        $l = Listing::create([
+            'user_id' => $u->id,
+            'title' => 'Laptop',
+            'description' => 'Test',
+            'category' => 'Laptops & Computers',
+            'price' => 250000,
+            'status' => 'active',
+        ]);
+        $this->actingAs($u)
+            ->post('/checkout/'.$l->id)
+            ->assertStatus(422);
     }
 
     public function test_non_admin_cannot_access_admin_dashboard(): void

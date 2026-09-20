@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentEvent extends Model
 {
-    protected $fillable = ['event_key', 'event_type', 'reference', 'payload', 'processed_at'];
+    protected $fillable = [
+        'event_key',
+        'event_type',
+        'reference',
+        'payload',
+        'processed_at',
+    ];
 
     protected function casts(): array
     {

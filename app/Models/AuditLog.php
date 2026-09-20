@@ -8,7 +8,13 @@ class AuditLog extends Model
 {
     public $updated_at = false;
 
-    protected $fillable = ['admin_id', 'action_type', 'target_type', 'target_id', 'notes'];
+    protected $fillable = [
+        'admin_id',
+        'action_type',
+        'target_type',
+        'target_id',
+        'notes',
+    ];
 
     public function admin()
     {

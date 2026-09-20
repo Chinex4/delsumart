@@ -14,31 +14,70 @@ use Illuminate\Support\Str;
 
 class PaymentController
 {
-    public function initialize(Request $r, Listing $listing, PaystackService $paystack)
-    {
-        abort_if($listing->user_id === $r->user()->id, 422, 'You cannot purchase your own listing.');
+    public function initialize(
+        Request $r,
+        Listing $listing,
+        PaystackService $paystack,
+    ) {
+        abort_if(
+            $listing->user_id === $r->user()->id,
+            422,
+            'You cannot purchase your own listing.',
+        );
         abort_unless($listing->status === 'active', 409);
-        $existing = Transaction::where('listing_id', $listing->id)->where('buyer_id', $r->user()->id)->where('status', 'pending_payment')->latest()->first();
-        $tx = $existing ?: Transaction::create(['listing_id' => $listing->id, 'buyer_id' => $r->user()->id, 'seller_id' => $listing->user_id, 'amount' => $listing->price, 'status' => 'pending_payment', 'paystack_reference' => 'DM-'.Str::upper(Str::random(18))]);
-        $data = $paystack->initialize($r->user()->email, (int) round(((float) $tx->amount) * 100), $tx->paystack_reference, route('payments.callback', ['reference' => $tx->paystack_reference]));
+        $existing = Transaction::where('listing_id', $listing->id)
+            ->where('buyer_id', $r->user()->id)
+            ->where('status', 'pending_payment')
+            ->latest()
+            ->first();
+        $tx =
+            $existing ?:
+            Transaction::create([
+                'listing_id' => $listing->id,
+                'buyer_id' => $r->user()->id,
+                'seller_id' => $listing->user_id,
+                'amount' => $listing->price,
+                'status' => 'pending_payment',
+                'paystack_reference' => 'DM-'.Str::upper(Str::random(18)),
+            ]);
+        $data = $paystack->initialize(
+            $r->user()->email,
+            (int) round(((float) $tx->amount) * 100),
+            $tx->paystack_reference,
+            route('payments.callback', [
+                'reference' => $tx->paystack_reference,
+            ]),
+        );
 
         return redirect()->away($data['authorization_url']);
     }
 
-    public function callback(Request $r, PaystackService $paystack, FraudScoringService $fraud)
-    {
+    public function callback(
+        Request $r,
+        PaystackService $paystack,
+        FraudScoringService $fraud,
+    ) {
         $ref = $r->string('reference')->value();
         $tx = Transaction::where('paystack_reference', $ref)->firstOrFail();
         abort_unless($tx->buyer_id === $r->user()->id, 403);
         $data = $paystack->verify($ref);
-        if (($data['status'] ?? null) !== 'success' || (int) ($data['amount'] ?? 0) !== (int) round(((float) $tx->amount) * 100) || strtoupper((string) ($data['currency'] ?? 'NGN')) !== 'NGN') {
+        if (
+            ($data['status'] ?? null) !== 'success' ||
+            (int) ($data['amount'] ?? 0) !==
+                (int) round(((float) $tx->amount) * 100) ||
+            strtoupper((string) ($data['currency'] ?? 'NGN')) !== 'NGN'
+        ) {
             abort(422, 'Payment could not be verified.');
-        }$changed = false;
+        }
+        $changed = false;
         DB::transaction(function () use ($tx, &$changed) {
             $locked = Transaction::lockForUpdate()->find($tx->id);
             if ($locked->status === 'pending_payment') {
                 $locked->update(['status' => 'paid_held', 'paid_at' => now()]);
-                $locked->listing()->where('status', 'active')->update(['status' => 'sold']);
+                $locked
+                    ->listing()
+                    ->where('status', 'active')
+                    ->update(['status' => 'sold']);
                 $changed = true;
             }
         });
@@ -50,21 +89,33 @@ class PaymentController
             $fraud->evaluate($tx->seller);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Payment verified and marked as protected.');
+        return redirect()
+            ->route('dashboard')
+            ->with('success', 'Payment verified and marked as protected.');
     }
 
     public function webhook(Request $r, PaystackService $paystack)
     {
         $raw = $r->getContent();
-        if (! $paystack->validWebhook($raw, $r->header('x-paystack-signature'))) {
+        if (
+            ! $paystack->validWebhook($raw, $r->header('x-paystack-signature'))
+        ) {
             abort(401);
-        }$event = $r->json()->all();
+        }
+        $event = $r->json()->all();
         $ref = data_get($event, 'data.reference');
         $key = hash('sha256', $raw);
         if (PaymentEvent::where('event_key', $key)->exists()) {
             return response()->json(['ok' => true]);
-        }DB::transaction(function () use ($event, $ref, $key) {
-            PaymentEvent::create(['event_key' => $key, 'event_type' => $event['event'] ?? 'unknown', 'reference' => $ref, 'payload' => $event, 'processed_at' => now()]);
+        }
+        DB::transaction(function () use ($event, $ref, $key) {
+            PaymentEvent::create([
+                'event_key' => $key,
+                'event_type' => $event['event'] ?? 'unknown',
+                'reference' => $ref,
+                'payload' => $event,
+                'processed_at' => now(),
+            ]);
         });
 
         return response()->json(['ok' => true]);

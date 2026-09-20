@@ -10,7 +10,10 @@ return new class extends Migration
     {
         Schema::create('bank_accounts', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $t->foreignId('user_id')
+                ->unique()
+                ->constrained()
+                ->cascadeOnDelete();
             $t->string('bank_code', 20);
             $t->string('bank_name');
             $t->string('account_number', 20);
@@ -25,10 +28,15 @@ return new class extends Migration
             $t->foreignId('user_id')->constrained()->restrictOnDelete();
             $t->foreignId('bank_account_id')->constrained()->restrictOnDelete();
             $t->decimal('amount', 12, 2);
-            $t->enum('status', ['pending', 'processing', 'paid', 'rejected'])->default('pending')->index();
+            $t->enum('status', ['pending', 'processing', 'paid', 'rejected'])
+                ->default('pending')
+                ->index();
             $t->string('reference')->unique();
             $t->text('admin_note')->nullable();
-            $t->foreignId('processed_by')->nullable()->constrained('users')->nullOnDelete();
+            $t->foreignId('processed_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $t->timestamp('processed_at')->nullable();
             $t->timestamps();
         });

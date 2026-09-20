@@ -22,8 +22,12 @@ class PayoutOtpNotification extends Notification
         return (new MailMessage)
             ->subject('Confirm your DelsuMart bank account')
             ->greeting('Bank account security check')
-            ->line('Use this one-time code to continue setting or changing your payout bank account:')
+            ->line(
+                'Use this one-time code to continue setting or changing your payout bank account:',
+            )
             ->line($this->code)
-            ->line('This code expires in 10 minutes. Do not share it with anyone.');
+            ->line(
+                'This code expires in 10 minutes. Do not share it with anyone.',
+            );
     }
 }

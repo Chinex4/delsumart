@@ -16,14 +16,28 @@ class KycController extends Controller
     public function store(Request $r, FraudScoringService $fraud)
     {
         $u = $r->user();
-        $d = $r->validate(['id_card' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096', 'fee_receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096']);
+        $d = $r->validate([
+            'id_card' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'fee_receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
+        ]);
         $existing = $u->verification;
         if ($existing?->verification_status === 'verified') {
             abort(409);
         }
         $id = $r->file('id_card')->store('kyc/'.$u->id, 'local');
         $fee = $r->file('fee_receipt')->store('kyc/'.$u->id, 'local');
-        $payload = ['matric_no' => $u->matric_no, 'full_name' => $u->name, 'programme' => $u->programme, 'level' => $u->level, 'id_card_image' => $id, 'fee_receipt_image' => $fee, 'verification_status' => 'pending', 'verified_by' => null, 'verified_at' => null, 'rejection_reason' => null];
+        $payload = [
+            'matric_no' => $u->matric_no,
+            'full_name' => $u->name,
+            'programme' => $u->programme,
+            'level' => $u->level,
+            'id_card_image' => $id,
+            'fee_receipt_image' => $fee,
+            'verification_status' => 'pending',
+            'verified_by' => null,
+            'verified_at' => null,
+            'rejection_reason' => null,
+        ];
         if ($existing) {
             $old = [$existing->id_card_image, $existing->fee_receipt_image];
             $payload['resubmission_count'] = $existing->resubmission_count + 1;
@@ -34,6 +48,11 @@ class KycController extends Controller
         }
         $fraud->evaluate($u->fresh());
 
-        return redirect()->route('kyc.show')->with('success', 'Your documents were submitted securely for review.');
+        return redirect()
+            ->route('kyc.show')
+            ->with(
+                'success',
+                'Your documents were submitted securely for review.',
+            );
     }
 }
