@@ -1,10 +1,56 @@
 @extends('layouts.admin')
-@section('title','KYC reviews')
+@section('title', 'Student verification')
 @section('content')
-<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">TRUST & SAFETY</p><h1 class="mt-2 text-3xl font-black">KYC verification queue</h1><p class="mt-2 text-slate-500">Inspect student details and private verification documents before deciding.</p></div></div>
-<div class="mt-8 grid gap-4">
-@forelse($verifications as $v)
-<article class="rounded-2xl border bg-white p-5 shadow-sm"><div class="flex flex-col gap-5 lg:flex-row lg:items-center"><div class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-blue-100 font-black text-blue-800">{{ strtoupper(substr($v->full_name,0,1)) }}</div><div class="min-w-0 flex-1"><div class="flex flex-wrap items-center gap-2"><h2 class="font-black">{{ $v->full_name }}</h2><span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $v->verification_status==='verified'?'bg-emerald-100 text-emerald-800':($v->verification_status==='rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-800') }}">{{ $v->verification_status }}</span></div><p class="mt-1 text-sm text-slate-500">{{ $v->matric_no }} · {{ $v->programme }} · {{ $v->level }}</p><p class="mt-1 text-xs text-slate-400">{{ $v->user->email }} · {{ $v->updated_at->format('d M Y, H:i') }} · {{ $v->resubmission_count }} resubmissions</p></div><a href="{{ route('admin.verifications.show',$v) }}" class="rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-bold text-white">Review documents →</a></div></article>
-@empty<div class="rounded-2xl border border-dashed bg-white p-12 text-center text-slate-500">No verification submissions found.</div>@endforelse
-</div><div class="mt-8">{{ $verifications->links() }}</div>
+    <x-page-header title="Student verification" eyebrow="TRUST STARTS HERE"
+        description="Review student identities with care. Documents stay private throughout the process." />
+    <form method="GET" class="filter-bar">
+        <x-field name="status" label="Verification status" type="select">
+            <option value="">All submissions</option>
+            @foreach (['pending', 'verified', 'rejected'] as $state)
+                <option value="{{ $state }}" @selected(request('status') === $state)>{{ ucfirst($state) }}</option>
+            @endforeach
+        </x-field>
+        <x-button variant="secondary">Filter</x-button>
+        <a class="text-link mb-3" href="{{ route('admin.verifications') }}">Reset</a>
+    </form>
+    <x-table label="Student verification queue">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Programme</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Review</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($verifications as $v)
+                <tr>
+                    <td>
+                        <strong>{{ $v->full_name }}</strong>
+                        <p class="field-hint">{{ $v->matric_no }}</p>
+                    </td>
+                    <td>{{ $v->programme }}<p class="field-hint">Level {{ $v->level }}</p>
+                    </td>
+                    <td>{{ $v->created_at->format('d M Y') }}<p class="field-hint">{{ $v->resubmission_count }}
+                            resubmissions</p>
+                    </td>
+                    <td>
+                        <x-badge :status="$v->verification_status" />
+                    </td>
+                    <td>
+                        <a class="text-link" href="{{ route('admin.verifications.show', $v) }}">View documents →</a>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5">
+                        <x-empty title="No submissions found"
+                            description="Try another status or come back when students submit their documents." />
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+    <div class="pagination">{{ $verifications->links() }}</div>
 @endsection
