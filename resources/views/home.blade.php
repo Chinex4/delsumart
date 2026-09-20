@@ -1,9 +1,169 @@
 @extends('layouts.app')
+@section('title', 'Your campus. Your marketplace.')
 @section('content')
-<section class="relative overflow-hidden bg-[#07152f] text-white"><div class="absolute inset-0 opacity-30" style="background:radial-gradient(circle at 75% 20%,#2563eb 0,transparent 35%),radial-gradient(circle at 15% 90%,#1d4ed8 0,transparent 30%)"></div><div class="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:py-28"><div><div class="inline-flex rounded-full border border-blue-400/30 bg-blue-400/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-blue-200">Built for the DELSU community</div><h1 class="mt-6 max-w-3xl text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">Campus deals, with <span class="text-blue-400">trust built in.</span></h1><p class="mt-6 max-w-xl text-lg leading-8 text-slate-300">Discover phones, laptops, books, fashion and everyday campus essentials from verified Delta State University students.</p><div class="mt-8 flex flex-wrap gap-3"><a href="{{ route('listings.index') }}" class="rounded-xl bg-blue-500 px-6 py-3.5 font-bold text-white shadow-lg shadow-blue-950/30">Explore marketplace →</a><a href="{{ route('register') }}" class="rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-bold">Start selling</a></div><div class="mt-10 flex flex-wrap gap-6 text-sm text-slate-300"><span>✓ Student verification</span><span>✓ Two-step login</span><span>✓ Protected payments</span></div></div>
-<div class="relative"><div class="grid grid-cols-2 gap-4 rotate-1"><div class="space-y-4 pt-10"><img class="h-64 w-full rounded-3xl object-cover shadow-2xl" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80" alt="University students studying together"><div class="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur"><p class="text-3xl font-black">{{ number_format($listingCount) }}</p><p class="mt-1 text-sm text-slate-300">active marketplace listings</p></div></div><div class="space-y-4"><img class="h-80 w-full rounded-3xl object-cover shadow-2xl" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80" alt="Students using laptops together"><div class="rounded-2xl bg-blue-500 p-5"><p class="text-sm font-black">Verified students</p><p class="mt-1 text-xs text-blue-100">Trade inside a more accountable campus community.</p></div></div></div></div></div></section>
-<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">FRESH ON CAMPUS</p><h2 class="mt-2 text-3xl font-black sm:text-4xl">Latest listings</h2><p class="mt-2 text-slate-500">Real items currently available from DelsuMart sellers.</p></div><a href="{{ route('listings.index') }}" class="font-bold text-blue-600">View all listings →</a></div><div class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">@forelse($recent as $listing)<a href="{{ route('listings.show',$listing) }}" class="group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div class="aspect-[4/3] overflow-hidden bg-slate-100">@if($listing->images->first())<img class="h-full w-full object-cover transition duration-300 group-hover:scale-105" src="{{ asset('storage/'.$listing->images->first()->path) }}" alt="{{ $listing->title }}">@else<div class="grid h-full place-items-center bg-gradient-to-br from-blue-50 to-slate-100 text-sm font-bold text-slate-400">DelsuMart</div>@endif</div><div class="p-5"><p class="text-[11px] font-black uppercase tracking-wider text-blue-600">{{ $listing->category }}</p><h3 class="mt-1 line-clamp-1 font-black">{{ $listing->title }}</h3><p class="mt-3 text-xl font-black">₦{{ number_format($listing->price,2) }}</p><div class="mt-4 flex items-center justify-between text-xs text-slate-500"><span>{{ $listing->seller->name }}</span>@if($listing->seller->isVerifiedStudent())<span class="font-bold text-emerald-600">✓ Verified</span>@endif</div></div></a>@empty<div class="col-span-full rounded-2xl border border-dashed p-12 text-center text-slate-500">No active listings yet.</div>@endforelse</div></section>
-<section class="bg-slate-100"><div class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">HOW IT WORKS</p><h2 class="mt-2 max-w-2xl text-3xl font-black sm:text-4xl">From student verification to a completed campus trade.</h2><div class="mt-10 grid gap-5 md:grid-cols-3">@foreach([['01','Verify your DELSU identity','Submit your student ID and current fee receipt for administrator review.'],['02','Discover or list an item','Browse real campus listings or publish your own once your account is verified.'],['03','Trade with protection','Payments are verified server-side and disputes pause normal completion for review.']] as $step)<div class="rounded-2xl border bg-white p-7"><span class="text-sm font-black text-blue-600">{{ $step[0] }}</span><h3 class="mt-5 text-xl font-black">{{ $step[1] }}</h3><p class="mt-3 text-sm leading-6 text-slate-500">{{ $step[2] }}</p></div>@endforeach</div></div></section>
-<section id="security" class="mx-auto max-w-7xl px-4 py-20 sm:px-6"><div class="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">SECURITY BY DESIGN</p><h2 class="mt-2 text-3xl font-black sm:text-4xl">More accountable than anonymous campus classifieds.</h2><p class="mt-4 leading-7 text-slate-500">DelsuMart combines student identity review with account security, server-verified payments, fraud signals and dispute controls.</p></div><div class="grid gap-4 sm:grid-cols-2">@foreach([['Student KYC','Only approved, active students can trade.'],['Email OTP MFA','Every login adds a time-limited email security code.'],['Fraud monitoring','Explainable rules surface unusual behaviour for human review.'],['Dispute controls','Disputed transactions pause normal completion until review.']] as $item)<div class="rounded-2xl border bg-white p-6 shadow-sm"><div class="grid h-10 w-10 place-items-center rounded-xl bg-blue-100 font-black text-blue-700">✓</div><h3 class="mt-4 font-black">{{ $item[0] }}</h3><p class="mt-2 text-sm leading-6 text-slate-500">{{ $item[1] }}</p></div>@endforeach</div></div></section>
-<section class="mx-auto max-w-7xl px-4 pb-20 sm:px-6"><div class="overflow-hidden rounded-3xl bg-blue-600 p-8 text-white sm:p-12"><div class="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center"><div><h2 class="text-3xl font-black">Ready to trade within DELSU?</h2><p class="mt-2 text-blue-100">Create your student account, complete verification and join the marketplace.</p></div><a href="{{ route('register') }}" class="rounded-xl bg-white px-6 py-3 font-black text-blue-700">Create account →</a></div></div></section>
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-copy">
+                <span class="hero-label">
+                    <x-icon name="location" size="13" /> Exclusively for DELSU students</span>
+                <h1>Your campus.<br>Your people.<br>
+                    <span>Your marketplace.</span>
+                </h1>
+                <p>Find what you need. Sell what you don't. A safer way to buy and sell with verified students, right here
+                    in Abraka.</p>
+                <div class="hero-actions">
+                    <x-button :href="route('listings.index')">Browse marketplace <x-icon name="arrow" size="17" />
+                    </x-button>
+                    <x-button :href="route('listings.create')" variant="secondary" icon="plus">Start
+                        selling</x-button>
+                </div>
+                <div class="hero-trust">
+                    <x-icon name="shield" size="17" /> Verified students. Real connections. Safer
+                    trading.
+                </div>
+            </div>
+            <div class="hero-art">
+                <img class="hero-image" src="{{ asset(config('marketplace.hero_image')) }}"
+                    alt="A laptop and everyday essentials ready for a productive day on campus" width="1200"
+                    height="800" fetchpriority="high">
+                <span class="hero-image-label">A new semester. A fresh start.</span>
+                <div class="hero-float">
+                    <span class="trust-icon">
+                        <x-icon name="shield" />
+                    </span>
+                    <div>
+                        <strong>Student to student. Built on trust.</strong>
+                        <p>Verified identities. Protected payment flow.</p>
+                    </div>
+                </div>
+                <span class="hero-caption">Campus essentials, closer to you.</span>
+            </div>
+        </div>
+    </section>
+    <div class="trust-strip">
+        <div class="container">
+            <div class="trust-item">
+                <x-icon name="shield" /> Verified student community
+            </div>
+            <div class="trust-item">
+                <x-icon name="lock" /> Protected payment flow
+            </div>
+            <div class="trust-item">
+                <x-icon name="location" /> Right here on campus
+            </div>
+            <div class="trust-item">
+                <x-icon name="message" /> Dispute support
+            </div>
+        </div>
+    </div>
+    <section class="section container">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">FIND YOUR NEXT CAMPUS ESSENTIAL</p>
+                <h2>What are you looking for?</h2>
+            </div>
+            <a class="text-link" href="{{ route('listings.index') }}">Explore all <x-icon name="arrow" size="16" />
+            </a>
+        </div>
+        <div class="category-grid">
+            @foreach (config('marketplace.categories') as $category => $icon)
+                <a class="category-card" href="{{ route('listings.index', ['category' => $category]) }}">
+                    <span class="category-icon">
+                        <x-icon :name="$icon" size="26" />
+                    </span>{{ $category }}</a>
+            @endforeach
+        </div>
+    </section>
+    <section class="section section-white">
+        <div class="container">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">FRESH FINDS, JUST LISTED</p>
+                    <h2>New around campus</h2>
+                    <p>{{ number_format($listingCount) }} active {{ Str::plural('listing', $listingCount) }}. Your next
+                        great find could be right here.</p>
+                </div>
+                <a class="text-link" href="{{ route('listings.index') }}">View all listings <x-icon name="arrow"
+                        size="16" />
+                </a>
+            </div>
+            <div class="listing-grid">
+                @forelse($recent as $listing)
+                    <x-listing-card :listing="$listing" />
+                @empty
+                    <x-empty title="Be the first great find"
+                        description="The marketplace is ready for your campus essentials. Get verified and publish your first listing.">
+                        <x-button :href="route('listings.create')" icon="plus">Create a listing</x-button>
+                    </x-empty>
+                @endforelse
+            </div>
+        </div>
+    </section>
+    <section id="how-it-works" class="section container">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">SIMPLE FROM START TO FINISH</p>
+                <h2>Campus trading, without the guesswork.</h2>
+            </div>
+        </div>
+        <div class="steps">
+            @foreach (config('ui.steps') as $step)
+                <article>
+                    <span class="step-number">0{{ $loop->iteration }}</span>
+                    <h3>{{ $step[0] }}</h3>
+                    <p>{{ $step[1] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+    <section id="security" class="container pb-12">
+        <div class="security-section">
+            <div>
+                <p class="eyebrow">TRUST IS PART OF THE DEAL</p>
+                <h2>A marketplace that<br>looks out for you.</h2>
+                <p>From who you're trading with to how a transaction ends, every step is designed to make campus commerce
+                    more accountable.</p>
+                <a class="btn btn-light mt-6" href="{{ route('kyc.show') }}">Get verified <x-icon name="arrow"
+                        size="16" />
+                </a>
+            </div>
+            <div class="security-grid">
+                @foreach (config('ui.security') as $item)
+                    <div>
+                        <x-icon :name="$item[0]" size="25" />
+                        <h3>{{ $item[1] }}</h3>
+                        <p>{{ $item[2] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    <section id="faq" class="section section-white">
+        <div class="container faq-layout">
+            <div>
+                <p class="eyebrow">A LITTLE MORE CLARITY</p>
+                <h2>Good questions.<br>Straight answers.</h2>
+                <p class="muted mt-4 text-sm">Everything you need to get started with confidence.</p>
+            </div>
+            <div class="faq">
+                @foreach (config('ui.faq') as $faq)
+                    <details>
+                        <summary>{{ $faq[0] }}</summary>
+                        <p>{{ $faq[1] }}</p>
+                    </details>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    <section class="section container">
+        <div class="cta-banner">
+            <div>
+                <h2>Your next great find is closer than you think.</h2>
+                <p>Join your campus community. Make room for something new.</p>
+            </div>
+            <x-button :href="auth()->check() ? route('listings.index') : route('register')">{{ auth()->check() ? 'Explore marketplace' : 'Join DelsuMart' }} <x-icon
+                    name="arrow" size="17" />
+            </x-button>
+        </div>
+    </section>
 @endsection

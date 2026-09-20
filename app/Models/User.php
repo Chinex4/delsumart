@@ -8,9 +8,18 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory,Notifiable;
+    use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'matric_no', 'email', 'programme', 'level', 'password', 'role', 'account_status'];
+    protected $fillable = [
+        'name',
+        'matric_no',
+        'email',
+        'programme',
+        'level',
+        'password',
+        'role',
+        'account_status',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -56,6 +65,7 @@ class User extends Authenticatable
 
     public function isVerifiedStudent(): bool
     {
-        return $this->verification?->verification_status === 'verified' && $this->account_status === 'active';
+        return $this->verification?->verification_status === 'verified' &&
+            $this->account_status === 'active';
     }
 }

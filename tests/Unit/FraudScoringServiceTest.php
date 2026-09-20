@@ -15,7 +15,15 @@ class FraudScoringServiceTest extends TestCase
 
     private function user(string $suffix = '1'): User
     {
-        return User::create(['name' => 'Student '.$suffix, 'matric_no' => 'N/'.$suffix, 'email' => 'n'.$suffix.'@example.test', 'programme' => 'CS', 'level' => '100', 'password' => Hash::make('Password123!'), 'account_status' => 'active']);
+        return User::create([
+            'name' => 'Student '.$suffix,
+            'matric_no' => 'N/'.$suffix,
+            'email' => 'n'.$suffix.'@example.test',
+            'programme' => 'CS',
+            'level' => '100',
+            'password' => Hash::make('Password123!'),
+            'account_status' => 'active',
+        ]);
     }
 
     public function test_normal_account_starts_low_risk(): void
@@ -29,16 +37,36 @@ class FraudScoringServiceTest extends TestCase
     {
         $u = $this->user();
         for ($i = 0; $i < 5; $i++) {
-            Listing::create(['user_id' => $u->id, 'title' => 'Item '.$i, 'description' => 'Test', 'category' => 'Other', 'price' => 1000 + $i, 'status' => 'active']);
-        }$r = app(FraudScoringService::class)->evaluate($u);
+            Listing::create([
+                'user_id' => $u->id,
+                'title' => 'Item '.$i,
+                'description' => 'Test',
+                'category' => 'Other',
+                'price' => 1000 + $i,
+                'status' => 'active',
+            ]);
+        }
+        $r = app(FraudScoringService::class)->evaluate($u);
         $this->assertSame(25, $r['score']);
         $this->assertSame('low', $r['level']);
         $this->assertDatabaseCount('fraud_flags', 0);
         for ($i = 5; $i < 12; $i++) {
-            Listing::create(['user_id' => $u->id, 'title' => 'Item '.$i, 'description' => 'Test', 'category' => 'Other', 'price' => 1000 + $i, 'status' => 'active']);
-        }$r = app(FraudScoringService::class)->evaluate($u);
+            Listing::create([
+                'user_id' => $u->id,
+                'title' => 'Item '.$i,
+                'description' => 'Test',
+                'category' => 'Other',
+                'price' => 1000 + $i,
+                'status' => 'active',
+            ]);
+        }
+        $r = app(FraudScoringService::class)->evaluate($u);
         $this->assertGreaterThanOrEqual(30, $r['score']);
         $this->assertNotEmpty($r['reasons']);
-        $this->assertDatabaseHas('fraud_flags', ['related_type' => 'account', 'related_id' => $u->id, 'status' => 'open']);
+        $this->assertDatabaseHas('fraud_flags', [
+            'related_type' => 'account',
+            'related_id' => $u->id,
+            'status' => 'open',
+        ]);
     }
 }

@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dispute extends Model
 {
-    protected $fillable = ['transaction_id', 'complainant_id', 'category', 'details', 'evidence_path', 'status', 'resolution', 'resolved_by', 'resolved_at'];
+    protected $fillable = [
+        'transaction_id',
+        'complainant_id',
+        'category',
+        'details',
+        'evidence_path',
+        'status',
+        'resolution',
+        'resolved_by',
+        'resolved_at',
+    ];
 
     protected function casts(): array
     {

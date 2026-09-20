@@ -10,9 +10,17 @@ class ListingController extends Controller
 {
     public function index(Request $r)
     {
-        $q = Listing::with(['seller.verification', 'images'])->where('status', 'active');
+        $q = Listing::with(['seller.verification', 'images'])->where(
+            'status',
+            'active',
+        );
         if ($s = $r->string('q')->trim()->value()) {
-            $q->where(fn ($x) => $x->where('title', 'like', "%$s%")->orWhere('description', 'like', "%$s%")->orWhere('category', 'like', "%$s%"));
+            $q->where(
+                fn ($x) => $x
+                    ->where('title', 'like', "%$s%")
+                    ->orWhere('description', 'like', "%$s%")
+                    ->orWhere('category', 'like', "%$s%"),
+            );
         }
         if ($c = $r->string('category')->value()) {
             $q->where('category', $c);
@@ -31,7 +39,18 @@ class ListingController extends Controller
             default => $q->latest(),
         };
 
-        return view('marketplace.index', ['listings' => $q->paginate(12)->withQueryString()]);
+        return view('marketplace.index', [
+            'listings' => $q->paginate(12)->withQueryString(),
+            'categories' => Listing::query()
+                ->where('status', 'active')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category')
+                ->merge(array_keys(config('marketplace.categories')))
+                ->unique()
+                ->sort()
+                ->values(),
+        ]);
     }
 
     public function show(Listing $listing)
@@ -48,14 +67,31 @@ class ListingController extends Controller
 
     public function store(Request $r, FraudScoringService $fraud)
     {
-        $d = $r->validate(['title' => 'required|string|max:120', 'description' => 'required|string|max:3000', 'category' => 'required|string|max:80', 'price' => 'required|numeric|min:100|max:10000000', 'images' => 'nullable|array|max:5', 'images.*' => 'image|max:4096']);
+        $d = $r->validate([
+            'title' => 'required|string|max:120',
+            'description' => 'required|string|max:3000',
+            'category' => 'required|string|max:80',
+            'price' => 'required|numeric|min:100|max:10000000',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|max:4096',
+        ]);
         $listing = $r->user()->listings()->create($d);
         foreach ($r->file('images', []) as $i => $image) {
-            $listing->images()->create(['path' => $image->store('listings/'.$listing->id, 'public'), 'sort_order' => $i]);
+            $listing
+                ->images()
+                ->create([
+                    'path' => $image->store(
+                        'listings/'.$listing->id,
+                        'public',
+                    ),
+                    'sort_order' => $i,
+                ]);
         }
         $fraud->evaluate($r->user());
 
-        return redirect()->route('listings.show', $listing)->with('success', 'Listing published.');
+        return redirect()
+            ->route('listings.show', $listing)
+            ->with('success', 'Listing published.');
     }
 
     public function destroy(Request $r, Listing $listing)

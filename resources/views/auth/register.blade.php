@@ -1,26 +1,28 @@
-@extends('layouts.app') @section('content')
-    <div class="mx-auto max-w-2xl px-4 py-14">
-        <p class="text-sm font-bold text-blue-700">DELSU STUDENTS</p>
-        <h1 class="mt-2 text-3xl font-black text-blue-950">Create your DelsuMart account</h1>
-        <p class="mt-2 text-slate-600">Your student details will be checked during verification before trading is unlocked.
-        </p>
-        <form method="POST" action="{{ route('register.store') }}" class="mt-8 grid gap-5 sm:grid-cols-2">@csrf @foreach ([['name', 'Full name'], ['matric_no', 'Matriculation number'], ['email', 'University email'], ['programme', 'Programme / Department'], ['level', 'Academic level']] as $f)
-                <label class="block {{ $f[0] === 'name' ? 'sm:col-span-2' : '' }}"><span
-                        class="text-sm font-semibold">{{ $f[1] }}</span><input name="{{ $f[0] }}"
-                        value="{{ old($f[0]) }}" required
-                        class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3"></label>
-            @endforeach
-            <label>
-                <span class="text-sm font-semibold">Password</span><input type="password" name="password" required
-                    class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3"></label><label><span
-                    class="text-sm font-semibold">Confirm password</span><input type="password" name="password_confirmation"
-                    required class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3"></label>
-            @if ($errors->any())
-                <div class="sm:col-span-2 border-l-4 border-red-600 bg-red-50 p-4 text-sm text-red-800">
-                    {{ $errors->first() }}</div>
-            @endif
-            <button class="sm:col-span-2 rounded-lg bg-blue-950 px-5 py-3 font-bold text-white">Create account & verify
-                identity</button>
-        </form>
-    </div>
+@extends('layouts.auth')
+@section('title', 'Join your campus community')
+@section('content')
+    <p class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</p>
+    <h1>Join your campus community.</h1>
+    <p class="muted text-sm">One account. A whole campus of possibilities.</p>
+    <form method="POST" action="{{ route('register.store') }}" class="form-stack">
+        @csrf
+        <x-field name="name" label="Full name" autocomplete="name" maxlength="100" required />
+        <div class="form-grid">
+            <x-field name="matric_no" label="Matric number" maxlength="30" placeholder="DELSU/CSC/001" required />
+            <x-field name="level" label="Level" maxlength="20" placeholder="e.g. 300" required />
+        </div>
+        <x-field name="email" label="Email address" type="email" autocomplete="email" maxlength="255" required />
+        <x-field name="programme" label="Programme of study" maxlength="100" placeholder="e.g. Computer Science" required />
+        <div class="form-grid">
+            <x-field name="password" label="Password" type="password" autocomplete="new-password" minlength="8"
+                hint="At least 8 characters, uppercase, lowercase and a number." required />
+            <x-field name="password_confirmation" label="Confirm password" type="password" autocomplete="new-password"
+                minlength="8" required />
+        </div>
+        <x-button>Create my account <x-icon name="arrow" size="17" />
+        </x-button>
+        <p class="field-hint text-center">Next, verify your student identity to start buying and selling.</p>
+    </form>
+    <p class="auth-footnote">Already part of the community? <a href="{{ route('login') }}">Log in</a>
+    </p>
 @endsection

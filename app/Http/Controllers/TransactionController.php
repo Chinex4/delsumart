@@ -18,6 +18,9 @@ class TransactionController extends Controller
             $tx->update(['status' => 'released', 'completed_at' => now()]);
         });
 
-        return back()->with('success', 'Receipt confirmed. Transaction completed.');
+        return back()->with(
+            'success',
+            'Receipt confirmed. Transaction completed.',
+        );
     }
 }

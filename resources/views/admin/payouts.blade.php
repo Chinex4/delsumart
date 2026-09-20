@@ -1,8 +1,101 @@
 @extends('layouts.admin')
-@section('title','Payouts')
+@section('title', 'Student payouts')
 @section('content')
-<div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">FINANCE OPERATIONS</p><h1 class="mt-2 text-3xl font-black">Student payout requests</h1><p class="mt-2 text-slate-500">Monitor withdrawal requests and record the administrative payout decision.</p></div>
-<div class="mt-8 grid gap-4 sm:grid-cols-3"><div class="rounded-2xl border bg-white p-5"><p class="text-xs font-black uppercase text-slate-400">Pending requests</p><p class="mt-3 text-3xl font-black">{{ $stats['pending'] }}</p></div><div class="rounded-2xl border bg-white p-5"><p class="text-xs font-black uppercase text-slate-400">Processing</p><p class="mt-3 text-3xl font-black">{{ $stats['processing'] }}</p></div><div class="rounded-2xl border bg-white p-5"><p class="text-xs font-black uppercase text-slate-400">Paid out</p><p class="mt-3 text-3xl font-black">₦{{ number_format($stats['paid_amount'],2) }}</p></div></div>
-<form class="mt-6"><select name="status" class="rounded-xl border bg-white px-4 py-3"><option value="">All statuses</option>@foreach(['pending','processing','paid','rejected'] as $status)<option value="{{ $status }}" @selected(request('status')===$status)>{{ ucfirst($status) }}</option>@endforeach</select><button class="ml-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Filter</button></form>
-<div class="mt-6 space-y-4">@forelse($payouts as $p)<article class="rounded-2xl border bg-white p-5 shadow-sm"><div class="grid gap-5 xl:grid-cols-[1fr_380px]"><div><div class="flex flex-wrap items-center gap-2"><h2 class="font-black">{{ $p->user->name }}</h2><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase">{{ $p->status }}</span></div><p class="mt-1 text-sm text-slate-500">{{ $p->user->matric_no }} · {{ $p->user->email }}</p><div class="mt-5 grid gap-4 sm:grid-cols-3"><div><p class="text-xs uppercase text-slate-400">Amount</p><p class="mt-1 text-xl font-black">₦{{ number_format($p->amount,2) }}</p></div><div><p class="text-xs uppercase text-slate-400">Bank account</p><p class="mt-1 font-bold">{{ $p->bankAccount->bank_name }}</p><p class="text-sm">{{ $p->bankAccount->account_name }} · {{ $p->bankAccount->account_number }}</p></div><div><p class="text-xs uppercase text-slate-400">Reference</p><p class="mt-1 font-mono text-xs">{{ $p->reference }}</p></div></div></div>@if(in_array($p->status,['pending','processing']))<form method="POST" action="{{ route('admin.payouts.update',$p) }}" class="rounded-xl bg-slate-50 p-4">@csrf @method('PATCH')<label class="text-sm font-bold">Update request<select name="status" class="mt-2 w-full rounded-lg border bg-white p-2"><option value="processing">Mark processing</option><option value="paid">Mark paid</option><option value="rejected">Reject</option></select></label><textarea name="admin_note" rows="2" placeholder="Administrative note / rejection reason" class="mt-3 w-full rounded-lg border p-2 text-sm"></textarea><button class="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white">Save & audit</button></form>@else<div class="rounded-xl bg-slate-50 p-4 text-sm"><strong>Final decision</strong><p class="mt-2 text-slate-600">{{ $p->admin_note ?: 'No note supplied.' }}</p></div>@endif</div></article>@empty<div class="rounded-2xl border border-dashed bg-white p-12 text-center text-slate-500">No payout requests found.</div>@endforelse</div><div class="mt-8">{{ $payouts->links() }}</div>
+    <x-page-header title="Student payouts" eyebrow="FINANCE OPERATIONS"
+        description="Review withdrawal requests and record each payout decision." />
+    <div class="stats-grid">
+        <x-stat label="Pending requests" :value="$stats['pending']" icon="clock" />
+        <x-stat label="Processing" :value="$stats['processing']" icon="wallet" />
+        <x-stat label="Paid out" :value="'₦' . number_format($stats['paid_amount'], 2)" icon="check" />
+    </div>
+    <form method="GET" class="filter-bar">
+        <x-field name="status" label="Payout status" type="select">
+            <option value="">All statuses</option>
+            @foreach (['pending', 'processing', 'paid', 'rejected'] as $status)
+                <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
+            @endforeach
+        </x-field>
+        <x-button variant="secondary">Filter</x-button>
+        <a class="text-link mb-3" href="{{ route('admin.payouts') }}">Reset</a>
+    </form>
+    <div class="stack">
+        @forelse ($payouts as $payout)
+            <x-card>
+                <div class="detail-grid">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <h2 class="text-lg">{{ $payout->user->name }}</h2>
+                            <x-badge :status="$payout->status" />
+                        </div>
+                        <p class="field-hint">{{ $payout->user->matric_no }} · {{ $payout->user->email }}</p>
+                        <dl class="detail-list mt-5">
+                            <div>
+                                <dt>Amount</dt>
+                                <dd>₦{{ number_format($payout->amount, 2) }}</dd>
+                            </div>
+                            <div>
+                                <dt>Bank</dt>
+                                <dd>{{ $payout->bankAccount->bank_name }}</dd>
+                            </div>
+                            <div>
+                                <dt>Account name</dt>
+                                <dd>{{ $payout->bankAccount->account_name }}</dd>
+                            </div>
+                            <div>
+                                <dt>Account number</dt>
+                                <dd>{{ $payout->bankAccount->account_number }}</dd>
+                            </div>
+                            <div>
+                                <dt>Reference</dt>
+                                <dd class="break-all">{{ $payout->reference }}</dd>
+                            </div>
+                            <div>
+                                <dt>Requested</dt>
+                                <dd>{{ $payout->created_at->format('d M Y, H:i') }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                    @if (in_array($payout->status, ['pending', 'processing']))
+                        <form method="POST" action="{{ route('admin.payouts.update', $payout) }}" class="form-stack"
+                            data-confirm="payout-{{ $payout->id }}">
+                            @csrf
+                            @method('PATCH')
+                            <div class="field">
+                                <label for="status-{{ $payout->id }}">Update request</label>
+                                <select name="status" id="status-{{ $payout->id }}" class="input">
+                                    <option value="processing">Mark processing</option>
+                                    <option value="paid">Mark paid</option>
+                                    <option value="rejected">Reject</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="note-{{ $payout->id }}">Administrative note</label>
+                                <textarea name="admin_note" id="note-{{ $payout->id }}" class="input" rows="3" maxlength="1000"
+                                    aria-describedby="note-help-{{ $payout->id }}">{{ old('admin_note') }}</textarea>
+                                <p id="note-help-{{ $payout->id }}" class="field-hint">A reason is required when
+                                    rejecting a request.</p>
+                            </div>
+                            <x-button>Save & audit</x-button>
+                        </form>
+                        <x-modal :id="'payout-' . $payout->id" title="Record this payout decision?">
+                            <p class="text-sm muted mb-5">Check the selected status and bank details. Mark a request as paid
+                                only after payment has been completed.</p>
+                            <x-button type="button" data-confirm-action>Confirm decision</x-button>
+                        </x-modal>
+                    @else
+                        <div>
+                            <h3 class="text-sm">Final decision</h3>
+                            <p class="muted text-sm mt-3">{{ $payout->admin_note ?: 'No note supplied.' }}</p>
+                        </div>
+                    @endif
+                </div>
+            </x-card>
+        @empty
+            <x-card>
+                <x-empty title="No matching requests" description="Payout requests matching your filter will appear here."
+                    icon="wallet" />
+            </x-card>
+        @endforelse
+    </div>
+    <div class="pagination">{{ $payouts->links() }}</div>
 @endsection

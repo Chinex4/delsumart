@@ -1,8 +1,75 @@
 @extends('layouts.admin')
-@section('title','Overview')
+@section('title', 'Trust & safety overview')
 @section('content')
-<div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">OPERATIONS</p><h1 class="mt-2 text-3xl font-black sm:text-4xl">Trust & safety overview</h1><p class="mt-2 text-slate-500">Monitor student verification, marketplace activity and cases that need attention.</p></div>
-<div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">@foreach($stats as $label=>$value)<div class="rounded-2xl border bg-white p-5 shadow-sm"><p class="text-xs font-black uppercase tracking-wide text-slate-400">{{ str_replace('_',' ',$label) }}</p><p class="mt-3 text-3xl font-black">{{ $value }}</p></div>@endforeach</div>
-<div class="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><section class="overflow-hidden rounded-2xl border bg-white shadow-sm"><div class="flex items-center justify-between border-b p-5"><div><h2 class="font-black">Pending KYC reviews</h2><p class="mt-1 text-xs text-slate-500">Students waiting for document review</p></div><a href="{{ route('admin.verifications') }}" class="text-sm font-bold text-blue-600">View queue →</a></div>@forelse($pending as $v)<div class="flex items-center justify-between gap-4 border-b p-5 last:border-0"><div><p class="font-bold">{{ $v->user->name }}</p><p class="mt-1 text-xs text-slate-500">{{ $v->matric_no }} · {{ $v->programme }}</p></div><a href="{{ route('admin.verifications.show',$v) }}" class="rounded-lg border px-3 py-2 text-xs font-bold">Review</a></div>@empty<div class="p-10 text-center text-sm text-slate-500">No pending verification requests.</div>@endforelse</section>
-<aside class="rounded-2xl bg-[#07152f] p-6 text-white"><p class="text-xs font-bold uppercase tracking-widest text-blue-300">ADMIN PRIORITIES</p><h2 class="mt-3 text-xl font-black">Keep the marketplace accountable.</h2><div class="mt-6 grid gap-3"><a href="{{ route('admin.flags') }}" class="rounded-xl border border-white/15 p-4 text-sm font-bold">Review fraud flags →</a><a href="{{ route('admin.disputes') }}" class="rounded-xl border border-white/15 p-4 text-sm font-bold">Resolve disputes →</a><a href="{{ route('admin.audits') }}" class="rounded-xl border border-white/15 p-4 text-sm font-bold">Inspect audit log →</a></div></aside></div>
+    <x-page-header title="Trust & safety overview" eyebrow="DELSUMART OPERATIONS"
+        description="A clear view of your campus marketplace and the people who keep it moving." />
+    <div class="stats-grid">
+        @foreach (config('ui.admin_stats') as $key => $item)
+            <x-stat :label="$item[0]" :value="$stats[$key]" :icon="$item[1]" />
+        @endforeach
+    </div>
+    <div class="detail-grid">
+        <div class="stack">
+            <x-card title="Students ready for review"
+                description="Check both documents before making a verification decision.">
+                @forelse($pending as $v)
+                    <div class="flex items-center gap-3 py-4 border-b border-slate-100 last:border-0">
+                        <x-avatar :user="$v->user" />
+                        <div class="min-w-0 flex-1">
+                            <p class="font-semibold">{{ $v->full_name }}</p>
+                            <p class="field-hint">{{ $v->matric_no }} · {{ $v->programme }}</p>
+                        </div>
+                        <a class="text-link" href="{{ route('admin.verifications.show', $v) }}">Review <x-icon
+                                name="arrow" size="16" />
+                        </a>
+                    </div>
+                @empty
+                    <x-empty title="The queue is clear" description="New student submissions will appear here." />
+                @endforelse
+                <a class="text-link mt-5" href="{{ route('admin.verifications') }}">View review queue →</a>
+            </x-card>
+            <x-card title="Recent transactions">
+                @forelse($recentTransactions as $tx)
+                    <div class="flex justify-between gap-3 py-4 border-b border-slate-100 last:border-0">
+                        <div>
+                            <p class="font-semibold text-sm">{{ $tx->listing->title }}</p>
+                            <p class="field-hint">{{ $tx->buyer->name }} → {{ $tx->seller->name }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold mb-2">₦{{ number_format($tx->amount, 2) }}</p>
+                            <x-badge :status="$tx->status" />
+                        </div>
+                    </div>
+                @empty
+                    <x-empty title="No transactions yet" />
+                @endforelse
+                <a class="text-link mt-5" href="{{ route('admin.transactions') }}">
+                    All transactions →</a>
+            </x-card>
+        </div>
+        <div class="stack">
+            <x-card title="Review priorities">
+                <div class="form-stack">
+                    <x-button :href="route('admin.disputes')" variant="secondary" icon="message">Resolve
+                        disputes</x-button>
+                    <x-button :href="route('admin.flags')" variant="secondary" icon="flag">Review fraud
+                        signals</x-button>
+                    <x-button :href="route('admin.payouts')" variant="secondary" icon="wallet">Manage
+                        payouts</x-button>
+                </div>
+            </x-card>
+            <x-card title="Latest audit activity">
+                @forelse($recentAudits as $log)
+                    <div class="py-3 border-b border-slate-100 last:border-0">
+                        <p class="text-sm font-semibold">{{ Str::headline($log->action_type) }}</p>
+                        <p class="field-hint">{{ $log->admin?->name ?? 'System' }} ·
+                            {{ $log->created_at->diffForHumans() }}</p>
+                    </div>
+                @empty
+                    <p class="muted text-sm">No administrative activity recorded.</p>
+                @endforelse
+                <a class="text-link mt-5" href="{{ route('admin.audits') }}">Explore audit log →</a>
+            </x-card>
+        </div>
+    </div>
 @endsection

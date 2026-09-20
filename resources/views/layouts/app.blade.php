@@ -1,83 +1,57 @@
 <!doctype html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'DelsuMart' }} — Secure DELSU Marketplace</title>@vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+<head>@include('partials.head')</head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900" x-data="{ menu: false }">
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex h-16 max-w-7xl items-center gap-7 px-4 sm:px-6"><a href="{{ route('home') }}"
-                class="text-xl font-black tracking-tight text-blue-950">delsu<span class="text-blue-700">mart</span></a>
-            <nav class="hidden items-center gap-6 text-sm font-semibold md:flex"><a href="{{ route('listings.index') }}"
-                    class="hover:text-blue-800">Marketplace</a><a href="{{ route('home') }}#security"
-                    class="hover:text-blue-800">Security</a>@auth @if (auth()->user()->isAdmin())
-                    <a href="{{ route('admin.students') }}">Students</a><a
-                        href="{{ route('admin.verifications') }}">KYC</a><a
-                        href="{{ route('admin.transactions') }}">Transactions</a><a
-                        href="{{ route('admin.disputes') }}">Disputes</a><a href="{{ route('admin.flags') }}">Fraud</a>
-                @endif @endauth
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="top-note">Built for our campus. <span>Trade with verified DELSU students.</span>
+    </div>
+    <header class="public-header" x-data="navigation">
+        <div class="container public-nav">
+            <x-brand />
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="{{ route('listings.index') }}"
+                    @if (request()->routeIs('listings.*')) aria-current="page" @endif>Marketplace</a>
+                <a href="{{ route('home') }}#how-it-works">How it works</a>
+                <a href="{{ route('home') }}#security">Safety & security</a>
             </nav>
-            <div class="ml-auto hidden items-center gap-3 sm:flex">@auth<a
-                        href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}"
-                        class="text-sm font-semibold">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}">@csrf<button
-                        class="border px-4 py-2 text-sm font-semibold">Sign out</button></form>@else<a
-                        href="{{ route('login') }}" class="text-sm font-semibold">Sign in</a><a
-                        href="{{ route('register') }}" class="bg-blue-950 px-4 py-2 text-sm font-bold text-white">Join
-                    DelsuMart</a>@endauth
+            <div class="nav-actions">
+                @auth
+                    <x-button :href="route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard')" icon="grid">My dashboard</x-button>
+                @else
+                    <a href="{{ route('login') }}">Log in</a>
+                    <x-button :href="route('register')">Create account <x-icon name="arrow" size="16" />
+                    </x-button>
+                @endauth
             </div>
-            <button @click="menu=!menu" :aria-expanded="menu" aria-label="Open navigation"
-                class="ml-auto border p-2 sm:hidden"><span class="block h-0.5 w-5 bg-slate-900"></span><span
-                    class="mt-1 block h-0.5 w-5 bg-slate-900"></span><span
-                    class="mt-1 block h-0.5 w-5 bg-slate-900"></span></button>
+            <button type="button" class="icon-button mobile-toggle" @click="toggle" :aria-expanded="open"
+                aria-controls="mobile-navigation" aria-label="Toggle navigation">
+                <x-icon name="menu" />
+            </button>
         </div>
-        <div x-cloak x-show="menu" @click.outside="menu=false" class="border-t bg-white px-4 py-4 sm:hidden">
-            <nav class="grid gap-1 text-sm font-semibold"><a class="p-3"
-                    href="{{ route('listings.index') }}">Marketplace</a>@auth<a class="p-3"
-                        href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}">Dashboard</a>
-                    @if (auth()->user()->isAdmin())
-                        <a class="p-3" href="{{ route('admin.students') }}">Students</a><a class="p-3"
-                            href="{{ route('admin.verifications') }}">KYC requests</a><a class="p-3"
-                            href="{{ route('admin.transactions') }}">Transactions</a><a class="p-3"
-                            href="{{ route('admin.disputes') }}">Disputes</a><a class="p-3"
-                            href="{{ route('admin.flags') }}">Fraud flags</a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}">
-                    @csrf<button class="w-full p-3 text-left">Sign out</button></form>@else<a class="p-3"
-                        href="{{ route('login') }}">Sign in</a><a class="bg-blue-950 p-3 text-white"
-                    href="{{ route('register') }}">Join DelsuMart</a>@endauth
-            </nav>
-        </div>
+        <nav id="mobile-navigation" class="mobile-nav" x-show="open" x-cloak @keydown.escape="close"
+            aria-label="Mobile navigation">
+            <a href="{{ route('listings.index') }}">Marketplace</a>
+            <a href="{{ route('home') }}#how-it-works">How it
+                works</a>
+            <a href="{{ route('home') }}#security">Safety & security</a>
+            @auth<x-button :href="route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard')">My dashboard</x-button>
+            @else
+                <a href="{{ route('login') }}">Log
+                    in</a>
+            <x-button :href="route('register')">Create account</x-button>@endauth
+        </nav>
     </header>
-    @if (session('success'))
-        <div class="mx-auto mt-4 max-w-7xl px-4">
-            <div role="status" class="border-l-4 border-emerald-600 bg-emerald-50 p-4 text-sm text-emerald-900">
-                {{ session('success') }}</div>
-        </div>
-    @endif
-    @if (session('warning'))
-        <div class="mx-auto mt-4 max-w-7xl px-4">
-            <div role="alert" class="border-l-4 border-amber-500 bg-amber-50 p-4 text-sm">{{ session('warning') }}
+    <main id="main-content">
+        @if (session('success') || session('warning') || $errors->any())
+            <div class="container pt-6">
+                <x-flash />
             </div>
-        </div>
-    @endif
-    <main>{{ $slot ?? '' }}@yield('content')</main>
-    <footer class="mt-20 border-t bg-blue-950 text-slate-300">
-        <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2">
-            <div>
-                <div class="text-xl font-black text-white">delsumart</div>
-                <p class="mt-2 max-w-md text-sm">A security-first peer-to-peer marketplace for verified Delta State
-                    University students.</p>
-            </div>
-            <div class="sm:text-right">
-                <p class="text-sm">Verified students. Protected transactions. Accountable trading.</p>
-            </div>
-        </div>
-    </footer>
+        @endif
+        @yield('content')
+    </main>
+    @include('partials.footer')
 </body>
 
 </html>

@@ -1,13 +1,76 @@
-@extends('layouts.dashboard')
-@section('title',$title)
+@extends('layouts.student')
+@section('title', $title)
 @section('content')
-<div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">{{ $eyebrow }}</p><h1 class="mt-2 text-3xl font-black">{{ $title }}</h1><p class="mt-2 text-slate-500">Track payment and completion states without leaving your student workspace.</p></div>
-<div class="mt-8 space-y-4">
-@forelse($transactions as $tx)
-<article class="rounded-2xl border bg-white p-5 shadow-sm sm:p-6"><div class="flex flex-col gap-5 md:flex-row md:items-center"><div class="h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">@if($tx->listing?->images?->first())<img class="h-full w-full object-cover" src="{{ asset('storage/'.$tx->listing->images->first()->path) }}" alt="">@endif</div><div class="min-w-0 flex-1"><div class="flex flex-wrap items-center gap-2"><h2 class="font-black">{{ $tx->listing?->title }}</h2><span class="rounded-full px-2.5 py-1 text-[11px] font-black uppercase {{ $tx->status==='released' ? 'bg-emerald-100 text-emerald-800' : ($tx->status==='disputed' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">{{ str_replace('_',' ',$tx->status) }}</span></div><p class="mt-1 font-mono text-xs text-slate-400">{{ $tx->paystack_reference }}</p><p class="mt-2 text-sm text-slate-500">@if(auth()->id()===$tx->buyer_id)Seller: {{ $tx->seller->name }}@else Buyer: {{ $tx->buyer->name }}@endif</p></div><div class="md:text-right"><p class="text-xl font-black">₦{{ number_format($tx->amount,2) }}</p><p class="mt-1 text-xs text-slate-400">{{ $tx->created_at->format('d M Y') }}</p></div></div>
-@if($tx->status==='disputed')<div class="mt-5 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><strong>Normal completion is paused.</strong> An administrator must review the dispute before the transaction can continue.</div>@endif
-@if($mode==='purchases' && auth()->id()===$tx->buyer_id && $tx->status==='paid_held')<div class="mt-5 flex flex-wrap gap-3"><form method="POST" action="{{ route('transactions.confirm',$tx) }}">@csrf<button class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white">Confirm receipt</button></form><form method="POST" action="{{ route('disputes.store',$tx) }}" class="flex flex-wrap gap-2">@csrf<input name="category" value="Condition" type="hidden"><input name="details" required class="rounded-xl border px-3 py-2 text-sm" placeholder="What went wrong?"><button class="rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-700">Open dispute</button></form></div>@endif
-</article>
-@empty<div class="rounded-2xl border border-dashed bg-white p-12 text-center"><h2 class="font-black">Nothing here yet</h2><p class="mt-2 text-sm text-slate-500">Your marketplace activity will appear here.</p></div>@endforelse
-</div><div class="mt-8">{{ $transactions->links() }}</div>
+    <x-page-header :title="$title" description="Follow every step, from payment to a successful handover."
+        eyebrow="YOUR MARKETPLACE ACTIVITY" />
+    <form class="filter-bar" method="GET">
+        <x-field name="status" label="Transaction state" type="select">
+            <option value="">All states</option>
+            @foreach (config('ui.transaction_states') as $value => $label)
+                <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+            @endforeach
+        </x-field>
+        <x-button variant="secondary" icon="filter">Filter</x-button>
+        <a class="text-link mb-3" href="{{ url()->current() }}">Reset</a>
+    </form>
+    <div class="stack">
+        @forelse($transactions as $tx)
+            <x-card>
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p class="eyebrow">{{ $tx->buyer_id === auth()->id() ? 'PURCHASE' : 'SALE' }} ·
+                            {{ $tx->created_at->format('d M Y') }}</p>
+                        <h2 class="text-lg">
+                            <a href="{{ route('listings.show', $tx->listing) }}">{{ $tx->listing->title }}</a>
+                        </h2>
+                        <p class="field-hint break-all">{{ $tx->paystack_reference }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xl font-bold mb-2">₦{{ number_format($tx->amount, 2) }}</p>
+                        <x-badge :status="$tx->status" />
+                    </div>
+                </div>
+                <dl class="detail-list mt-6">
+                    <div>
+                        <dt>Buyer</dt>
+                        <dd>{{ $tx->buyer->name }}</dd>
+                    </div>
+                    <div>
+                        <dt>Seller</dt>
+                        <dd>{{ $tx->seller->name }}</dd>
+                    </div>
+                    @if ($tx->paid_at)
+                        <div>
+                            <dt>Payment verified</dt>
+                            <dd>{{ $tx->paid_at->format('d M Y, H:i') }}</dd>
+                        </div>
+                        @endif @if ($tx->completed_at)
+                            <div>
+                                <dt>Completed</dt>
+                                <dd>{{ $tx->completed_at->format('d M Y, H:i') }}</dd>
+                            </div>
+                        @endif
+                </dl>
+                @if ($tx->status === 'disputed')
+                    <x-alert tone="warning" class="mt-5 mb-0">This transaction is under dispute. Normal completion is paused
+                        pending review. <a class="text-link" href="{{ route('account.disputes') }}">View disputes
+                            →</a>
+                    </x-alert>
+                @endif
+                <div class="flex flex-wrap gap-3 mt-5">
+                    <x-transaction-actions :transaction="$tx" />
+                    @if ($tx->status === 'pending_payment' && $tx->buyer_id === auth()->id() && $tx->listing->status === 'active')
+                        <x-button :href="route('listings.show', $tx->listing)" variant="secondary">Return to item</x-button>
+                    @endif
+                </div>
+            </x-card>
+        @empty
+            <x-card>
+                <x-empty :title="'No ' . strtolower($title) . ' yet'" description="Your marketplace activity will appear here when you start trading.">
+                    <x-button :href="route('listings.index')">Explore marketplace</x-button>
+                </x-empty>
+            </x-card>
+        @endforelse
+    </div>
+    <div class="pagination">{{ $transactions->links() }}</div>
 @endsection

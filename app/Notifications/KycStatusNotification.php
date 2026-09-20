@@ -10,7 +10,10 @@ class KycStatusNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private string $status, private ?string $reason = null) {}
+    public function __construct(
+        private string $status,
+        private ?string $reason = null,
+    ) {}
 
     public function via(object $n): array
     {
@@ -21,9 +24,19 @@ class KycStatusNotification extends Notification
     {
         $m = (new MailMessage)->subject('DelsuMart verification update');
         if ($this->status === 'verified') {
-            return $m->greeting('Verification approved')->line('Your DELSU student identity has been verified. Marketplace trading is now unlocked.');
+            return $m
+                ->greeting('Verification approved')
+                ->line(
+                    'Your DELSU student identity has been verified. Marketplace trading is now unlocked.',
+                );
         }
 
-        return $m->greeting('Verification needs attention')->line('Your verification submission was not approved.')->line($this->reason ?: 'Please review your verification page and resubmit the requested documents.');
+        return $m
+            ->greeting('Verification needs attention')
+            ->line('Your verification submission was not approved.')
+            ->line(
+                $this->reason ?:
+                'Please review your verification page and resubmit the requested documents.',
+            );
     }
 }

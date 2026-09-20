@@ -10,7 +10,7 @@ class AdminMarketplaceController extends Controller
 {
     public function listings(Request $r)
     {
-        $q = Listing::with('seller');
+        $q = Listing::with(['seller', 'images']);
         if ($s = $r->string('q')->trim()->value()) {
             $q->where('title', 'like', "%$s%");
         }
@@ -18,7 +18,9 @@ class AdminMarketplaceController extends Controller
             $q->where('status', $status);
         }
 
-        return view('admin.listings', ['listings' => $q->latest()->paginate(20)->withQueryString()]);
+        return view('admin.listings', [
+            'listings' => $q->latest()->paginate(20)->withQueryString(),
+        ]);
     }
 
     public function transactions(Request $r)
@@ -31,6 +33,27 @@ class AdminMarketplaceController extends Controller
             $q->where('paystack_reference', 'like', "%$ref%");
         }
 
-        return view('admin.transactions', ['transactions' => $q->latest()->paginate(20)->withQueryString()]);
+        foreach (['buyer', 'seller'] as $party) {
+            if ($name = $r->string($party)->trim()->value()) {
+                $q->whereHas(
+                    $party,
+                    fn ($user) => $user->where('name', 'like', "%$name%"),
+                );
+            }
+        }
+        $dates = $r->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+        ]);
+        if ($dates['from'] ?? null) {
+            $q->whereDate('created_at', '>=', $dates['from']);
+        }
+        if ($dates['to'] ?? null) {
+            $q->whereDate('created_at', '<=', $dates['to']);
+        }
+
+        return view('admin.transactions', [
+            'transactions' => $q->latest()->paginate(20)->withQueryString(),
+        ]);
     }
 }

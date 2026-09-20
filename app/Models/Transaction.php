@@ -6,11 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    protected $fillable = ['listing_id', 'buyer_id', 'seller_id', 'amount', 'status', 'paystack_reference', 'paid_at', 'completed_at'];
+    protected $fillable = [
+        'listing_id',
+        'buyer_id',
+        'seller_id',
+        'amount',
+        'status',
+        'paystack_reference',
+        'paid_at',
+        'completed_at',
+    ];
 
     protected function casts(): array
     {
-        return ['amount' => 'decimal:2', 'paid_at' => 'datetime', 'completed_at' => 'datetime'];
+        return [
+            'amount' => 'decimal:2',
+            'paid_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
     }
 
     public function listing()

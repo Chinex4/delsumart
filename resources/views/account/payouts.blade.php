@@ -1,19 +1,130 @@
-@extends('layouts.dashboard')
-@section('title','Payouts')
+@extends('layouts.student')
+@section('title', 'Payouts')
 @section('content')
-<div x-data="payoutBankSetup()" x-init="init()" class="mx-auto max-w-6xl">
-<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[.2em] text-blue-600">EARNINGS</p><h1 class="mt-2 text-3xl font-black">Payouts</h1><p class="mt-2 text-slate-500">Track completed sales, set a verified Nigerian bank account and request withdrawals.</p></div></div>
-<div class="mt-8 grid gap-4 sm:grid-cols-3"><div class="rounded-2xl border bg-white p-5 shadow-sm"><p class="text-xs font-black uppercase text-slate-400">Total sales so far</p><p class="mt-3 text-3xl font-black">₦{{ number_format($totalSales,2) }}</p></div><div class="rounded-2xl border bg-white p-5 shadow-sm"><p class="text-xs font-black uppercase text-slate-400">Available to request</p><p class="mt-3 text-3xl font-black text-emerald-700">₦{{ number_format($available,2) }}</p></div><div class="rounded-2xl border bg-white p-5 shadow-sm"><p class="text-xs font-black uppercase text-slate-400">Paid out</p><p class="mt-3 text-3xl font-black">₦{{ number_format($totalPaid,2) }}</p></div></div>
-<div class="mt-6 grid gap-6 xl:grid-cols-[1fr_380px]"><section class="rounded-2xl border bg-white p-6 shadow-sm"><div class="flex items-center justify-between gap-3"><div><h2 class="text-lg font-black">Payout account</h2><p class="mt-1 text-sm text-slate-500">Bank details must be confirmed through Paystack before they can receive payouts.</p></div>@if($bankAccount)<span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase text-emerald-700">Verified</span>@endif</div>
-@if($bankAccount)<div class="mt-6 rounded-2xl bg-slate-50 p-5"><p class="text-xs font-bold uppercase text-slate-400">{{ $bankAccount->bank_name }}</p><p class="mt-2 text-xl font-black">{{ $bankAccount->account_name }}</p><p class="mt-1 font-mono text-sm text-slate-500">••••••{{ substr($bankAccount->account_number,-4) }}</p></div><form method="POST" action="{{ route('payouts.bank.otp') }}" class="mt-5">@csrf<button class="rounded-xl border px-4 py-2.5 text-sm font-bold">Change bank account securely</button></form>
-@else<div class="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5"><h3 class="font-black text-blue-950">Secure bank setup</h3><p class="mt-2 text-sm leading-6 text-blue-800">Before adding an account, confirm the OTP sent to your registered email address.</p><form method="POST" action="{{ route('payouts.bank.otp') }}" class="mt-4">@csrf<button class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white">Send OTP</button></form></div>@endif
-<div class="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]"><form method="POST" action="{{ route('payouts.bank.otp.verify') }}" class="contents">@csrf<input name="otp" inputmode="numeric" maxlength="6" placeholder="6-digit OTP" class="rounded-xl border px-4 py-3"><button class="rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Confirm OTP</button></form></div>
-@if(session('payout_bank_verified_at') || session()->has('payout_bank_verified_at'))@endif
-<div class="mt-7 border-t pt-6" x-show="authorized" x-cloak><h3 class="font-black">Add bank account</h3><div class="mt-4 grid gap-4"><select x-model="bankCode" @change="resolved=null; maybeResolve()" class="rounded-xl border px-4 py-3"><option value="">Select Nigerian bank</option><template x-for="bank in banks" :key="bank.code"><option :value="bank.code" x-text="bank.name"></option></template></select><input x-model="accountNumber" @input.debounce.500ms="maybeResolve()" inputmode="numeric" maxlength="10" placeholder="10-digit account number" class="rounded-xl border px-4 py-3"><div x-show="loading" class="text-sm text-slate-500">Checking account with Paystack…</div><div x-show="resolved" class="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p class="text-xs font-bold uppercase text-emerald-600">Account confirmed</p><p class="mt-1 font-black text-emerald-950" x-text="resolved?.account_name"></p></div><div x-show="error" class="rounded-xl bg-red-50 p-3 text-sm text-red-700" x-text="error"></div>
-<form method="POST" action="{{ route('payouts.bank.store') }}" x-show="resolved">@csrf<input type="hidden" name="bank_code" :value="bankCode"><input type="hidden" name="bank_name" :value="selectedBankName()"><input type="hidden" name="account_number" :value="accountNumber"><button class="w-full rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Save verified bank account</button></form></div></div></section>
-<aside class="rounded-2xl bg-slate-950 p-6 text-white"><p class="text-xs font-bold uppercase tracking-widest text-blue-300">REQUEST WITHDRAWAL</p><h2 class="mt-3 text-xl font-black">Withdraw sales balance</h2><p class="mt-3 text-sm leading-6 text-slate-300">Requests are reviewed by an administrator. Minimum ₦5,000. Maximum ₦200,000 per request.</p><form method="POST" action="{{ route('payouts.store') }}" class="mt-6">@csrf<label class="text-sm font-bold">Amount</label><div class="mt-2 flex rounded-xl bg-white p-1 text-slate-950"><span class="px-3 py-3 font-black">₦</span><input name="amount" type="number" min="5000" max="200000" step="100" class="min-w-0 flex-1 border-0 px-2" placeholder="5000"></div>@error('amount')<p class="mt-2 text-xs text-red-300">{{ $message }}</p>@enderror<button @disabled(!$bankAccount || $available < 5000) class="mt-4 w-full rounded-xl bg-blue-500 px-5 py-3 font-black disabled:cursor-not-allowed disabled:opacity-40">Request payout</button></form></aside></div>
-<section class="mt-6 overflow-hidden rounded-2xl border bg-white shadow-sm"><div class="border-b p-5"><h2 class="font-black">Payout history</h2></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-slate-50 text-left text-xs uppercase text-slate-400"><tr><th class="p-4">Reference</th><th class="p-4">Amount</th><th class="p-4">Bank</th><th class="p-4">Status</th><th class="p-4">Requested</th></tr></thead><tbody class="divide-y">@forelse($payouts as $p)<tr><td class="p-4 font-mono text-xs">{{ $p->reference }}</td><td class="p-4 font-black">₦{{ number_format($p->amount,2) }}</td><td class="p-4">{{ $p->bankAccount->bank_name }} · ••••{{ substr($p->bankAccount->account_number,-4) }}</td><td class="p-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase">{{ $p->status }}</span></td><td class="p-4 text-slate-500">{{ $p->created_at->format('d M Y') }}</td></tr>@empty<tr><td colspan="5" class="p-10 text-center text-slate-500">No payout requests yet.</td></tr>@endforelse</tbody></table></div></section><div class="mt-6">{{ $payouts->links() }}</div></div>
-<script>
-function payoutBankSetup(){return{banks:[],bankCode:'',accountNumber:'',resolved:null,loading:false,error:'',authorized:false,async init(){try{let r=await fetch('{{ route('payouts.banks') }}',{headers:{Accept:'application/json'}});if(r.ok){this.authorized=true;this.banks=(await r.json()).data}}catch(e){}},selectedBankName(){return this.banks.find(b=>b.code===this.bankCode)?.name||''},async maybeResolve(){this.resolved=null;this.error='';if(!this.bankCode||this.accountNumber.length!==10)return;this.loading=true;let r=await fetch('{{ route('payouts.bank.resolve') }}',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({bank_code:this.bankCode,account_number:this.accountNumber})});let d=await r.json();this.loading=false;if(r.ok)this.resolved=d.data;else this.error=d.message||'Unable to verify this account.'}}}
-</script>
+    <x-page-header title="Your earnings" eyebrow="PAYOUTS"
+        description="Track completed sales, set your verified bank account and request a withdrawal." />
+    <div class="stats-grid">
+        <x-stat label="Completed sales" :value="'₦' . number_format($totalSales, 2)" icon="bag" />
+        <x-stat label="Available to request" :value="'₦' . number_format($available, 2)" icon="wallet" />
+        <x-stat label="Paid out" :value="'₦' . number_format($totalPaid, 2)" icon="check" />
+    </div>
+    <div class="detail-grid mb-7" x-data="payoutBankSetup"
+        data-bank-authorized="{{ (int) session('payout_bank_verified_at', 0) >= now()->subMinutes(15)->timestamp ? 'true' : 'false' }}"
+        data-banks-url="{{ route('payouts.banks') }}" data-resolve-url="{{ route('payouts.bank.resolve') }}">
+        <x-card title="Payout account" description="Confirm your email before adding or changing your bank details.">
+            @if ($bankAccount)
+                <div class="rounded-lg bg-slate-50 p-5 mb-5">
+                    <x-badge status="verified" />
+                    <p class="font-semibold mt-3">{{ $bankAccount->bank_name }}</p>
+                    <p class="text-sm mt-1">{{ $bankAccount->account_name }}</p>
+                    <p class="field-hint">••••••{{ substr($bankAccount->account_number, -4) }}</p>
+                </div>
+            @else
+                <x-alert title="Set up your bank account">We'll verify your Nigerian bank account through Paystack before
+                    you can request a payout.</x-alert>
+            @endif
+            <form method="POST" action="{{ route('payouts.bank.otp') }}">
+                @csrf
+                <x-button variant="secondary"
+                    icon="lock">{{ $bankAccount ? 'Change bank account securely' : 'Send security code' }}</x-button>
+            </form>
+            <form method="POST" action="{{ route('payouts.bank.otp.verify') }}" class="form-stack mt-5">
+                @csrf
+                <x-field name="otp" label="Email security code" inputmode="numeric" autocomplete="one-time-code"
+                    pattern="[0-9]{6}" maxlength="6" required
+                    hint="Enter the 6-digit code sent to your registered email." />
+                <x-button>Confirm code</x-button>
+            </form>
+            <div x-show="authorized" x-cloak class="form-stack mt-7 border-t border-slate-100 pt-6">
+                <h3 class="text-lg">Add bank account</h3>
+                <div class="field">
+                    <label for="bank-code">Nigerian bank</label>
+                    <select id="bank-code" x-model="bankCode" @change="maybeResolve" class="input">
+                        <option value="">Select a bank</option>
+                        <template x-for="bank in banks" :key="bank.code">
+                            <option :value="bank.code" x-text="bank.name">
+                            </option>
+                        </template>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="account-number">Account number</label>
+                    <input id="account-number" x-model="accountNumber" @input.debounce.500ms="maybeResolve"
+                        inputmode="numeric" maxlength="10" class="input" aria-describedby="bank-help">
+                    <p id="bank-help" class="field-hint">Enter your 10-digit Nigerian account number.</p>
+                </div>
+                <p x-show="loading" role="status" class="muted text-sm">Checking account with Paystack…</p>
+                <div x-show="resolved" class="alert alert-success">
+                    <div>
+                        <strong>Account confirmed</strong>
+                        <p x-text="resolvedName">
+                        </p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('payouts.bank.store') }}" x-show="resolved">
+                    @csrf
+                    <input type="hidden" name="bank_code" :value="bankCode">
+                    <input type="hidden" name="bank_name" :value="selectedBankName">
+                    <input type="hidden" name="account_number" :value="accountNumber">
+                    <x-button class="w-full">Save verified bank account</x-button>
+                </form>
+            </div>
+            <p x-show="error" x-text="error" role="alert" class="field-error mt-4">
+            </p>
+        </x-card>
+        <aside class="stack content-start">
+            <x-card title="Request a withdrawal"
+                description="Requests are reviewed by an administrator. Only completed sales contribute to your available balance.">
+                <form method="POST" action="{{ route('payouts.store') }}" class="form-stack">
+                    @csrf
+                    <x-field name="amount" label="Amount (₦)" type="number" min="5000" max="200000" step="0.01"
+                        required hint="Between ₦5,000 and ₦200,000 per request." />
+                    <x-button :disabled="!$bankAccount || $available < 5000">Request payout</x-button>
+                    @if (!$bankAccount || $available < 5000)
+                        <p class="field-hint">You'll need a verified bank account and at least ₦5,000 available to request a
+                            payout.</p>
+                    @endif
+                </form>
+            </x-card>
+            <x-alert title="Your balance, explained">Pending and processing requests reserve part of your sales balance
+                until a decision is recorded.</x-alert>
+        </aside>
+    </div>
+    <div class="section-heading">
+        <h2>Payout history</h2>
+    </div>
+    <x-table label="Your payout requests">
+        <thead>
+            <tr>
+                <th>Reference</th>
+                <th>Amount</th>
+                <th>Bank</th>
+                <th>Status</th>
+                <th>Requested</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($payouts as $payout)
+                <tr>
+                    <td class="font-mono text-xs">{{ $payout->reference }}</td>
+                    <td class="font-semibold">₦{{ number_format($payout->amount, 2) }}</td>
+                    <td>{{ $payout->bankAccount->bank_name }}<p class="field-hint">
+                            ••••{{ substr($payout->bankAccount->account_number, -4) }}</p>
+                    </td>
+                    <td>
+                        <x-badge :status="$payout->status" />
+                    </td>
+                    <td>{{ $payout->created_at->format('d M Y') }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5">
+                        <x-empty title="No withdrawals yet"
+                            description="Your payout requests and their progress will appear here." icon="wallet" />
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-table>
+    <div class="pagination">{{ $payouts->links() }}</div>
 @endsection
