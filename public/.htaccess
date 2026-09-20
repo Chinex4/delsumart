@@ -1,3 +1,9 @@
+# Force CloudLinux/LiteSpeed to serve this Laravel application with PHP 8.3.
+# The production host otherwise falls back to alt-php74 despite the cPanel domain setting.
+<IfModule mime_module>
+    AddHandler application/x-httpd-alt-php83___lsphp .php .php8 .phtml
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
