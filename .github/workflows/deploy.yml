@@ -98,6 +98,8 @@ jobs:
             --exclude='storage/framework/' \
             --exclude='storage/logs/' \
             --exclude='public/storage' \
+            --exclude='public/php.ini' \
+            --exclude='public/.user.ini' \
             -e "ssh -i ~/.ssh/delsumart_deploy -p $SSH_PORT" \
             ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
 
