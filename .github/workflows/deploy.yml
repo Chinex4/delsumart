@@ -42,14 +42,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
 
       - name: Install production PHP dependencies
         run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Build production assets
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Prepare SSH
@@ -146,5 +145,7 @@ jobs:
           SSH_PORT: ${{ secrets.DEPLOY_PORT }}
           SSH_USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "cd '$DEPLOY_PATH' && if [ -f artisan ] && [ -f .env ]; then '$PHP_BIN' artisan up || true; fi" || true
+          if [ -f ~/.ssh/delsumart_deploy ] && [ -f ~/.ssh/known_hosts ]; then
+            ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+              "cd '$DEPLOY_PATH' && if [ -f artisan ] && [ -f .env ]; then '$PHP_BIN' artisan up || true; fi" || true
+          fi
