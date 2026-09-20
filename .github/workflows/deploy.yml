@@ -1,0 +1,141 @@
+name: Deploy production
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: delsumart-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_PATH: /home/vinsfxto/delsumart
+      PHP_BIN: /opt/alt/php83/usr/bin/php
+
+    steps:
+      - name: Check out tested revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Build production assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/delsumart_deploy
+          chmod 600 ~/.ssh/delsumart_deploy
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Verify server prerequisites
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "test -d '$DEPLOY_PATH' && '$PHP_BIN' -r 'exit(PHP_VERSION_ID >= 80300 ? 0 : 1);' && command -v rsync >/dev/null"
+
+      - name: Put application in maintenance mode
+        continue-on-error: true
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "cd '$DEPLOY_PATH' && if [ -f artisan ] && [ -f .env ]; then '$PHP_BIN' artisan down --retry=60; fi"
+
+      - name: Deploy application files
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.env' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='storage/app/' \
+            --exclude='storage/framework/' \
+            --exclude='storage/logs/' \
+            --exclude='public/storage' \
+            -e "ssh -i ~/.ssh/delsumart_deploy -p $SSH_PORT" \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Finalize Laravel deployment
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" <<'REMOTE'
+          set -e
+          cd /home/vinsfxto/delsumart
+          PHP=/opt/alt/php83/usr/bin/php
+
+          if [ ! -f .env ]; then
+            echo "Production .env is missing at /home/vinsfxto/delsumart/.env"
+            exit 1
+          fi
+
+          mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+          chmod -R ug+rwX storage bootstrap/cache
+
+          "$PHP" artisan optimize:clear
+          "$PHP" artisan migrate --force
+          "$PHP" artisan config:cache
+          "$PHP" artisan route:cache
+          "$PHP" artisan view:cache
+          "$PHP" artisan storage:link || true
+          "$PHP" artisan up
+          REMOTE
+
+      - name: Restore application after failed deployment
+        if: failure()
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_PORT: ${{ secrets.DEPLOY_PORT }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "cd '$DEPLOY_PATH' && if [ -f artisan ] && [ -f .env ]; then '$PHP_BIN' artisan up || true; fi" || true
