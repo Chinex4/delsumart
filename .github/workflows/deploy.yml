@@ -126,7 +126,16 @@ jobs:
           "$PHP" artisan config:cache
           "$PHP" artisan route:cache
           "$PHP" artisan view:cache
-          "$PHP" artisan storage:link || true
+          # Recreate Laravel's public storage link on every deployment so uploaded
+          # listing/KYC assets served from the public disk remain reachable.
+          if [ -L public/storage ]; then
+            rm public/storage
+          elif [ -e public/storage ]; then
+            echo "public/storage exists but is not a symlink; refusing to replace it automatically."
+            exit 1
+          fi
+          "$PHP" artisan storage:link
+
           "$PHP" artisan up
           REMOTE
 
