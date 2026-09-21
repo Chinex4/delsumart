@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\MfaService;
 use Illuminate\Http\Request;
@@ -54,6 +55,15 @@ class AuthController extends Controller
                 'login' => 'The supplied credentials are invalid.',
             ]);
         }
+        if (! SystemSetting::boolean('email_login_otp', true)) {
+            Auth::login($u);
+            $r->session()->regenerate();
+
+            return redirect()->intended(
+                $u->isAdmin() ? route('admin.dashboard') : route('dashboard'),
+            );
+        }
+
         $mfa->issue($u);
         $r->session()->put('mfa_user_id', $u->id);
 

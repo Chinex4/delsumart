@@ -1748,3 +1748,38 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+
+.password-field {
+  position: relative;
+}
+.password-field .input {
+  padding-right: 48px;
+}
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #637086;
+}
+.password-toggle:hover {
+  background: #f1f4f8;
+  color: #2556d8;
+}
+.password-eye {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

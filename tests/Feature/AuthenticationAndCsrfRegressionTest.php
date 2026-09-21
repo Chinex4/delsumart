@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\MfaCodeNotification;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -68,6 +69,48 @@ class AuthenticationAndCsrfRegressionTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->post('/logout')->assertRedirect('/');
         $this->assertGuest();
+    }
+
+    public function test_admin_can_disable_email_otp_and_login_skips_mfa(): void
+    {
+        Notification::fake();
+        $admin = User::create([
+            'name' => 'Admin User',
+            'matric_no' => 'ADMIN/001',
+            'email' => 'admin@example.test',
+            'programme' => 'Administration',
+            'level' => 'Staff',
+            'password' => 'Password123!',
+            'role' => 'admin',
+            'account_status' => 'active',
+        ]);
+
+        $this->actingAs($admin)->patch('/admin/system/settings', [
+            'email_login_otp' => '0',
+        ])->assertRedirect();
+
+        $this->post('/logout');
+        $this->post('/login', [
+            'login' => $admin->email,
+            'password' => 'Password123!',
+        ])->assertRedirect('/admin');
+
+        $this->assertAuthenticatedAs($admin);
+        Notification::assertNothingSent();
+        $this->assertFalse(SystemSetting::boolean('email_login_otp', true));
+    }
+
+    public function test_non_admin_cannot_change_system_settings_or_clear_caches(): void
+    {
+        $user = $this->user();
+
+        $this->actingAs($user)
+            ->patch('/admin/system/settings', ['email_login_otp' => '0'])
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->post('/admin/system/clear-caches')
+            ->assertForbidden();
     }
 
     public function test_password_reset_uses_existing_reset_broker(): void

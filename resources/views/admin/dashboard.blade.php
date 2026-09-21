@@ -48,6 +48,29 @@
             </x-card>
         </div>
         <div class="stack">
+            <x-card title="System settings" description="Security controls that apply across DelsuMart.">
+                <form method="POST" action="{{ route('admin.system.settings.update') }}" class="form-stack">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="email_login_otp" value="0">
+                    <label class="flex items-start gap-3">
+                        <input type="checkbox" name="email_login_otp" value="1" @checked($emailLoginOtpEnabled)>
+                        <span>
+                            <strong class="block">Email OTP for login</strong>
+                            <span class="field-hint">When enabled, a valid password is followed by the six-digit email verification step.</span>
+                        </span>
+                    </label>
+                    <x-button>Save security settings</x-button>
+                </form>
+                <div class="mt-6 pt-5 border-t border-slate-100">
+                    <p class="font-semibold text-sm">Application cache</p>
+                    <p class="field-hint mb-3">Clear Laravel optimization and configuration caches after production environment changes.</p>
+                    <form method="POST" action="{{ route('admin.system.clear-caches') }}">
+                        @csrf
+                        <x-button variant="secondary">Clear application caches</x-button>
+                    </form>
+                </div>
+            </x-card>
             <x-card title="Review priorities">
                 <div class="form-stack">
                     <x-button :href="route('admin.disputes')" variant="secondary" icon="message">Resolve
