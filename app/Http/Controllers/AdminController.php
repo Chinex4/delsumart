@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Dispute;
 use App\Models\FraudFlag;
 use App\Models\Listing;
+use App\Models\SystemSetting;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Verification;
@@ -19,6 +20,7 @@ class AdminController extends Controller
     public function dashboard()
     {
         return view('admin.dashboard', [
+            'emailLoginOtpEnabled' => SystemSetting::boolean('email_login_otp', true),
             'stats' => [
                 'students' => User::where('role', 'student')->count(),
                 'verified' => Verification::where(
