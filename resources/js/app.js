@@ -159,6 +159,21 @@ Alpine.data("payoutBankSetup", () => ({
   },
 }));
 
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest("[data-password-toggle]");
+  if (!toggle) return;
+
+  const input = document.getElementById(toggle.dataset.passwordToggle);
+  if (!input) return;
+
+  const showing = input.type === "text";
+  input.type = showing ? "password" : "text";
+  toggle.setAttribute("aria-pressed", String(!showing));
+  toggle.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+  toggle.querySelector(".password-eye-open").hidden = !showing;
+  toggle.querySelector(".password-eye-closed").hidden = showing;
+});
+
 // Native dialogs retain keyboard focus and support Escape without weakening CSP.
 document.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-dialog]");
