@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminDisputeController;
 use App\Http\Controllers\AdminMarketplaceController;
 use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\AdminStudentController;
+use App\Http\Controllers\AdminSystemController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisputeController;
@@ -178,6 +179,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [AdminController::class, 'dashboard'])->name(
                 'dashboard',
             );
+            Route::patch('/system/settings', [AdminSystemController::class, 'update'])->name('system.settings.update');
+            Route::post('/system/clear-caches', [AdminSystemController::class, 'clearCaches'])
+                ->middleware('throttle:3,10')
+                ->name('system.clear-caches');
             Route::get('/students', [
                 AdminStudentController::class,
                 'index',
