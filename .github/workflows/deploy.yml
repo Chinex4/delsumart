@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     env:
-      DEPLOY_PATH: /home/vinsfxto/delsumart
+      DEPLOY_PATH: /home/bealodgr/delsumart.bealodgr.com
       PHP_BIN: /opt/alt/php83/usr/bin/php
 
     steps:
@@ -111,11 +111,11 @@ jobs:
         run: |
           ssh -i ~/.ssh/delsumart_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" <<'REMOTE'
           set -e
-          cd /home/vinsfxto/delsumart
+          cd /home/bealodgr/delsumart.bealodgr.com
           PHP=/opt/alt/php83/usr/bin/php
 
           if [ ! -f .env ]; then
-            echo "Production .env is missing at /home/vinsfxto/delsumart/.env"
+            echo "Production .env is missing at /home/bealodgr/delsumart.bealodgr.com/.env"
             exit 1
           fi
 
